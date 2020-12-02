@@ -3,6 +3,7 @@
 
 using namespace Rcpp;
 
+// location (list) to index (start from 1)
 std::vector<int64_t> loc2idx(const std::vector<std::vector<int64_t>>& locations, const std::vector<int64_t>& dim){
   int64_t dimSize = dim.size();
   if( dimSize != locations.size() ){
@@ -21,7 +22,7 @@ std::vector<int64_t> loc2idx(const std::vector<std::vector<int64_t>>& locations,
   R_xlen_t inflate = 1, margin = 0;
   R_xlen_t neach = 1;
 
-  std::vector<int64_t> re = std::vector<int64_t>(sub_size, INTEGER64_ONE);
+  std::vector<int64_t> re = std::vector<int64_t>(sub_size, 0);
   std::vector<int64_t>::iterator ptr_loc, ptr_re;
 
   for(ii = 0; ii < dimSize; ii++ ){
@@ -292,21 +293,19 @@ std::vector<std::vector<int64_t>> listOrEnv2Idx2(SEXP listOrEnv, std::vector<int
   return(indexSet);
 }
 
-// [[Rcpp::export]]
-std::set<int64_t> uniqueIndexSet(std::vector<int64_t> idx){
-  std::set<int64_t> re;
-  std::vector<int64_t>::iterator ptr = idx.begin();
-  while(ptr != idx.end()){
-    re.insert(*ptr++);
-  }
-  return re;
+
+std::vector<int64_t> uniqueIndexSet(const std::vector<int64_t>& idx){
+  std::vector<int64_t> cp;
+  std::unique_copy(idx.begin(), idx.end(), std::back_inserter(cp));
+  return cp;
 }
 
 
 /*** R
-a <- 1:1e4
+a <- sample(1e7, 1e7, T)
+# uniqueIndexSet = farray:::uniqueIndexSet
 microbenchmark::microbenchmark({
-  uniqueIndexSet(a)
+  uniqueIndexSet2(a)
 }, unique(a), times = 4)
 
 # farray:::listOrEnv2Idx2(list(

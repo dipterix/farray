@@ -16,8 +16,8 @@ std::vector<std::vector<int64_t>> loc2idx2(
 // [[Rcpp::export]]
 std::vector<std::vector<int64_t>> listOrEnv2Idx2(SEXP listOrEnv, std::vector<int64_t> dim, std::vector<int64_t> bDim);
 
-
-std::set<int64_t> uniqueIndexSet(std::vector<int64_t> idx);
+// [[Rcpp::export]]
+std::vector<int64_t> uniqueIndexSet(const std::vector<int64_t>& idx);
 
 
 #endif // DIP_FARRAY_INDEX_H

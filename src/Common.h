@@ -1,8 +1,17 @@
-#ifndef DIP_FARRAY_COMMON_H
-#define DIP_FARRAY_COMMON_H
+#ifndef DIP_LAZYARRAY_COMMON_H
+#define DIP_LAZYARRAY_COMMON_H
 
-#include <vector>
+// Common header that's required by all (most) files
 
+#include <Rcpp.h>
+
+using namespace Rcpp;
+
+/*
+ * Number of bytes fst uses to compress as a unit
+ * We use it differently, basically 4x or 8x or 16x this number as our block size
+ * to avoid repeating too many blocks
+ */
 #ifndef NA_INTEGER64
 //undef NA_INTEGER64
 #define NA_INTEGER64 LLONG_MIN
@@ -21,44 +30,47 @@
 #define LASUBMOD_MULTI 0
 #endif
 
-#ifdef FARRAY_DEBUG
-#undef FARRAY_DEBUG
+#ifdef LAZYARRAY_DEBUG
+#undef LAZYARRAY_DEBUG
 #endif
 
-const static int64_t INTEGER64_ONE = 1;
-
-
 /*
- * farray dimension is [in-file dim (iDim)] x [file dim (fDim)]
+ * For array with dimension [287 x 200 x 601 x 84]
+ * BLOCKSIZE decides the size of block to read into from fst file
+ * because fst internally stores data in blocks, it's recommended to read blocks with size > 16384
  *
- * 1. block size: when reading an element from a block, the whole block gets read
- * 2. block dim (bDim): block dimension within a file
- * 3. in-file dim: the dimensions within a partition
- * 4. file dim: total length is the file length
+ * by default, this array will be split into 3 parts
+ * [287 x 200 x 601 x 84] => [287 x 200] x [601 x 1] x [84]
  *
- * iDimSize: length(iDim), > 0 (>= 1)
- * bDimSize: length(bDim) = length(iDim)
- * fDimSize: length(fDim), > 0 (>= 1)
+ * 84 is # of partition /files
+ * for each file, read in sub chunk of length 287 x 200 (> BLOCKSIZE)
+ * total number of chunks to read is 601 per file
  *
- * iLength: prod(iDim): in-file actual length
- * bLength: prod(bDim): block length (also the single buffer length)
- * fLength: prod(fDim): total partition length
- * iLength2: in-file storage length (inflated, see below, multiple of buffer length)
+ * loc2idx3 calculates indices within each sub-chunks so that it's easy to find then once data is loaded
  *
- * in-file length is rounded up to multiply of block dim
+ * However, of sub-block is too large, for example [1e30 x 5] matrix, sub-block size is 1e30, loc2idx3 generates too many
+ * indices but the indices come with cost of memory (this means super large index set). We wish to calculate
+ * indices on the fly. The boundary is set by BLOCKLARGE.
  *
- * ## Example:
- * For array with dimension [iDim = 287 x 200] x [fDim = 601 x 84]
- * If block dim is [16 x 32],
- *
- * Within partition can store [288 x 224] = [16*18  x 32*7] elements
- *
- * Unlike lazyarray, *always* index arrays
- *
- * bufferSize = Single buffer size = bLength
- * total buffer size is bufferSize * nThreads (# of threads)
+ * If # of indices > BLOCKLARGE, then don't pre-generate indices
  *
  */
 
+// Used to partition to sub-blocks
+static R_xlen_t BLOCKSIZE = 16384;
+// If sub-block size is too large, don't calculate indices (memory inefficient)
+// ~ 250 MB index set
+static R_xlen_t BLOCKLARGE = 31250000;
 
-#endif // DIP_FARRAY_COMMON_H
+const static int64_t INTEGER64_ONE = 1;
+const static R_xlen_t INTEGER_XLEN_ONE = 1;
+
+// [[Rcpp::interfaces(r, cpp)]]
+// [[Rcpp::export]]
+R_xlen_t setLazyBlockSize(R_xlen_t size);
+
+// [[Rcpp::export]]
+R_xlen_t getLazyBlockSize();
+
+
+#endif // DIP_LAZYARRAY_COMMON_H
