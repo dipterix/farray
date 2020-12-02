@@ -17,10 +17,9 @@ FileArray <- R6::R6Class(
       invisible(self)
     },
 
-    initialize = function(path, dim, storage_format = c('double', 'integer'),
-                          read_only = TRUE, meta_name = 'lazyarray.meta'){
+    initialize = function(path, dim, storage_format = 'double',
+                          read_only = TRUE, meta_name = 'farray.meta'){
       private$.file_format <- "bmat"
-      storage_format <- match.arg(storage_format)
       if(missing(dim)){
         super$initialize(path = path, storage_format = storage_format,
                          read_only = read_only, meta_name = meta_name)
@@ -136,7 +135,7 @@ FileArray <- R6::R6Class(
     setLazyBlockSize(block_size)
 
     on.exit({
-      # reset block size for fst arrays
+      # reset block size for farrays
       setLazyBlockSize(-1)
     }, add = TRUE)
   }

@@ -109,11 +109,8 @@ std::vector<int64_t> loc2idx3(SEXP locations, std::vector<int64_t>& parent_dim);
 // subsetIdx and subsetIdx2 should not be used directly as parseSlices combines them all
 SEXP subsetIdx(Rcpp::Environment expr_env, Rcpp::NumericVector dim, bool pos_subscript = false);
 
-// [[Rcpp::export]]
-Rcpp::List extractSlices(SEXP listOrEnv, const R_xlen_t& ndims);
-
 // parseSlices = subsetIdx or subsetIdx2
-// WARNING: Always use pos_subscript if you want to use subset or subsetAssign functions in lazyarray
+// WARNING: Always use pos_subscript if you want to use subset or subsetAssign functions in farray
 // pos_subscript=false subset is not implemented
 // [[Rcpp::export]]
 Rcpp::List parseSlices(SEXP listOrEnv, const std::vector<int64_t>& dim, bool pos_subscript = true);

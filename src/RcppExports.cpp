@@ -20,18 +20,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// extractSlices
-Rcpp::List extractSlices(SEXP listOrEnv, const R_xlen_t& ndims);
-RcppExport SEXP _farray_extractSlices(SEXP listOrEnvSEXP, SEXP ndimsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type listOrEnv(listOrEnvSEXP);
-    Rcpp::traits::input_parameter< const R_xlen_t& >::type ndims(ndimsSEXP);
-    rcpp_result_gen = Rcpp::wrap(extractSlices(listOrEnv, ndims));
-    return rcpp_result_gen;
-END_RCPP
-}
 // parseSlices
 Rcpp::List parseSlices(SEXP listOrEnv, const std::vector<int64_t>& dim, bool pos_subscript);
 RcppExport SEXP _farray_parseSlices(SEXP listOrEnvSEXP, SEXP dimSEXP, SEXP pos_subscriptSEXP) {
@@ -498,42 +486,6 @@ RcppExport SEXP _farray_tok(SEXP msgSEXP, SEXP stopSEXP) {
     UNPROTECT(1);
     return rcpp_result_gen;
 }
-// subsetAssignVector
-SEXP subsetAssignVector(SEXP x, int64_t start, SEXP value);
-static SEXP _farray_subsetAssignVector_try(SEXP xSEXP, SEXP startSEXP, SEXP valueSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
-    Rcpp::traits::input_parameter< int64_t >::type start(startSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type value(valueSEXP);
-    rcpp_result_gen = Rcpp::wrap(subsetAssignVector(x, start, value));
-    return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP _farray_subsetAssignVector(SEXP xSEXP, SEXP startSEXP, SEXP valueSEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_farray_subsetAssignVector_try(xSEXP, startSEXP, valueSEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
-    if (rcpp_isLongjump_gen) {
-        Rcpp::internal::resumeJump(rcpp_result_gen);
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
-}
 
 // validate (ensure exported C++ functions exist before calling them)
 static int _farray_RcppExport_validate(const char* sig) { 
@@ -551,7 +503,6 @@ static int _farray_RcppExport_validate(const char* sig) {
         signatures.insert("SEXPTYPE(*getSexpType)(SEXP)");
         signatures.insert("SEXP(*tik)()");
         signatures.insert("SEXP(*tok)(std::string,bool)");
-        signatures.insert("SEXP(*subsetAssignVector)(SEXP,int64_t,SEXP)");
     }
     return signatures.find(sig) != signatures.end();
 }
@@ -570,14 +521,12 @@ RcppExport SEXP _farray_RcppExport_registerCCallable() {
     R_RegisterCCallable("farray", "_farray_getSexpType", (DL_FUNC)_farray_getSexpType_try);
     R_RegisterCCallable("farray", "_farray_tik", (DL_FUNC)_farray_tik_try);
     R_RegisterCCallable("farray", "_farray_tok", (DL_FUNC)_farray_tok_try);
-    R_RegisterCCallable("farray", "_farray_subsetAssignVector", (DL_FUNC)_farray_subsetAssignVector_try);
     R_RegisterCCallable("farray", "_farray_RcppExport_validate", (DL_FUNC)_farray_RcppExport_validate);
     return R_NilValue;
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_farray_loc2idx3", (DL_FUNC) &_farray_loc2idx3, 2},
-    {"_farray_extractSlices", (DL_FUNC) &_farray_extractSlices, 2},
     {"_farray_parseSlices", (DL_FUNC) &_farray_parseSlices, 3},
     {"_farray_parseAndScheduleBlocks2", (DL_FUNC) &_farray_parseAndScheduleBlocks2, 3},
     {"_farray_reshapeOrDrop", (DL_FUNC) &_farray_reshapeOrDrop, 3},
@@ -594,7 +543,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_farray_getSexpType", (DL_FUNC) &_farray_getSexpType, 1},
     {"_farray_tik", (DL_FUNC) &_farray_tik, 0},
     {"_farray_tok", (DL_FUNC) &_farray_tok, 2},
-    {"_farray_subsetAssignVector", (DL_FUNC) &_farray_subsetAssignVector, 3},
     {"_farray_RcppExport_registerCCallable", (DL_FUNC) &_farray_RcppExport_registerCCallable, 0},
     {NULL, NULL, 0}
 };

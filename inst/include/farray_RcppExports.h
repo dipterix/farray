@@ -276,27 +276,6 @@ namespace farray {
         return Rcpp::as<SEXP >(rcpp_result_gen);
     }
 
-    inline SEXP subsetAssignVector(SEXP x, int64_t start, SEXP value) {
-        typedef SEXP(*Ptr_subsetAssignVector)(SEXP,SEXP,SEXP);
-        static Ptr_subsetAssignVector p_subsetAssignVector = NULL;
-        if (p_subsetAssignVector == NULL) {
-            validateSignature("SEXP(*subsetAssignVector)(SEXP,int64_t,SEXP)");
-            p_subsetAssignVector = (Ptr_subsetAssignVector)R_GetCCallable("farray", "_farray_subsetAssignVector");
-        }
-        RObject rcpp_result_gen;
-        {
-            RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_subsetAssignVector(Shield<SEXP>(Rcpp::wrap(x)), Shield<SEXP>(Rcpp::wrap(start)), Shield<SEXP>(Rcpp::wrap(value)));
-        }
-        if (rcpp_result_gen.inherits("interrupted-error"))
-            throw Rcpp::internal::InterruptedException();
-        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
-            throw Rcpp::LongjumpException(rcpp_result_gen);
-        if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<SEXP >(rcpp_result_gen);
-    }
-
 }
 
 #endif // RCPP_farray_RCPPEXPORTS_H_GEN_

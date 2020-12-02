@@ -54,53 +54,6 @@ SEXP tok(std::string msg, bool stop){
 }
 
 
-template <typename T, typename I>
-bool contains(T vec, SEXP el){
-  for(I ptr = vec.begin(); ptr != vec.end(); vec++ ){
-    if(*ptr == el){
-      return true;
-    }
-  }
-  return false;
-}
-
-SEXP getListElement(SEXP list, const char *str){
-  if( Rf_isNull(list) ){
-    return R_NilValue;
-  }
-  SEXP elmt = R_NilValue;
-  SEXP names = Rf_getAttrib(list, R_NamesSymbol);
-
-  const String str_copy(str);
-
-  for (R_len_t i = 0; i < Rf_length(list); i++){
-    if(str_copy == String(CHAR(STRING_ELT(names, i)))) {
-      elmt = VECTOR_ELT(list, i);
-      break;
-    }
-  }
-  return elmt;
-}
-
-SEXP getListElement2(SEXP list, const char *str, const SEXP ifNull){
-  if( Rf_isNull(list) ){
-    return ifNull;
-  }
-  SEXP elmt = ifNull;
-  SEXP names = Rf_getAttrib(list, R_NamesSymbol);
-
-  const String str_copy(str);
-
-  for (R_len_t i = 0; i < Rf_length(list); i++){
-    if(str_copy == String(CHAR(STRING_ELT(names, i)))) {
-      elmt = VECTOR_ELT(list, i);
-      break;
-    }
-  }
-  return elmt;
-}
-
-
 SEXP dropDimension(SEXP x){
   SEXP dim = Rf_getAttrib(x, wrap("dim"));
   if(dim == R_NilValue){
@@ -256,53 +209,6 @@ SEXPTYPE getSexpType(SEXP x){
   return TYPEOF(x);
 }
 
-SEXP captureException( const std::exception& e ){
-  std::ostringstream msg;
-  msg << "c++: Captured error: " << e.what();
-  StringVector re = {msg.str()};
-  re.attr("class") = "lazyarray-error";
-  return wrap(re);
-}
-
-SEXP makeException( std::string msg ){
-  StringVector re = {msg};
-  re.attr("class") = "lazyarray-error";
-  return wrap(re);
-}
-
-
-SEXP subsetAssignVector(SEXP x, int64_t start, SEXP value){
-  R_xlen_t xlen = Rf_xlength(x);
-  R_xlen_t vlen = Rf_xlength(value);
-  if(xlen < start + vlen - 1){
-    Rcpp::stop("c++: cannot subset-assign: value too lengthy");
-  }
-  SEXPTYPE typex = TYPEOF(x);
-
-  SEXP value_alt = PROTECT(value);
-  if(TYPEOF(value) != typex){
-    UNPROTECT(1);
-    value_alt = PROTECT(Rf_coerceVector(value, typex));
-  }
-  SEXP x_alt = PROTECT(x);
-
-  switch(typex){
-  case REALSXP: {
-    std::memcpy( REAL(x_alt) + start - 1, REAL(value_alt), vlen * sizeof(double));
-    break;
-  }
-  case INTSXP: {
-    std::memcpy( INTEGER(x_alt) + start - 1, INTEGER(value_alt), vlen * sizeof(int));
-    break;
-  }
-  default:
-    Rcpp::stop("c++: un-supported data types.");
-  }
-  UNPROTECT(2);
-
-  return R_NilValue;
-}
-
 
 void setReIm(ComplexVector x, NumericVector v, bool is_real){
   if(x.size() != v.size()){
@@ -329,7 +235,7 @@ as.call(c(list(quote(x)), a))
 
 
 # # devtools::load_all()
-# require(lazyarray)
+# require(farray)
 #
 # dim = c(4, 9, 2)
 # a <- function(i,...){
@@ -452,15 +358,6 @@ as.call(c(list(quote(x)), a))
 # # v1 = lazyLoadOld_base(f, c(2,3,1), c(-1L, as.integer(s)), 1); v1
 # # v1 = lazyLoadOld_base(f, c(2,3,2), c(-1L, as.integer(s)), c(0,1)); v1
 #
-# # cpp_fstmeta(f)
-#
-# # system.time({
-# #   cpp_array_loc_to_index_homogeneous(as.integer(c(200, 500, 100)), list(
-# #     as.integer(sample(300)),
-# #     as.integer(sample(200)),
-# #     as.integer(sample(300))
-# #   ))
-# # })
 #
 # # f= normalizePath("~/Desktop/junk/junk.fst", mustWork = FALSE)
 # # s = sample(500000, size = 5000000, replace = TRUE)
@@ -475,7 +372,7 @@ as.call(c(list(quote(x)), a))
 #
 # # range(as.matrix(v2[s - min(s) + 1,] - v1))
 #
-# # cpp_create_lazyarray(x, c(length(x) / 10,10), normalizePath(f, mustWork = FALSE), 13L, 100L, TRUE)
+# # cpp_create_farray(x, c(length(x) / 10,10), normalizePath(f, mustWork = FALSE), 13L, 100L, TRUE)
 # # file.info(f)
 # # # Sys.chmod(f, mode = "0777", use_umask = FALSE)
 # # # file.copy(f, '~/Desktop/junk/junk2.fst')

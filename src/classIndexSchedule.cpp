@@ -641,33 +641,6 @@ std::vector<int64_t> loc2idx3(SEXP locations, std::vector<int64_t>& parent_dim){
   return(re);
 }
 
-List extractSlices(SEXP listOrEnv, const R_xlen_t& ndims){
-  switch(TYPEOF(listOrEnv)) {
-  case ENVSXP: {
-    List sliceIdx = List::create();
-
-    try {
-      Rcpp::Environment env = listOrEnv;
-      sliceIdx.push_back( env.find("i") );
-    } catch (...){}
-
-    // i is missing, scenario 1
-    SEXP dots = Rf_findVarInFrame(listOrEnv, R_DotsSymbol);
-    R_xlen_t idx_size = 0;
-    for(; (dots != R_NilValue) && (dots != R_MissingArg); dots = CDR(dots), idx_size++ ){
-      if(idx_size >= ndims){
-        stop("Incorrect subscript dimensions, required: 0, 1, ndim.");
-      }
-      sliceIdx.push_back(CAR(dots));
-    }
-    return sliceIdx;
-  }
-  case VECSXP:
-    return as<List>(listOrEnv);
-  default:
-    Rcpp::stop("Input `listOrEnv` must be either a list of indices or an environment");
-  }
-}
 
 List parseSlices(SEXP listOrEnv, const std::vector<int64_t>& dim, bool pos_subscript){
   tok("S parseSlices");

@@ -15,7 +15,7 @@
 #' partition_table(x)
 #'
 #' # LazyArray
-#' x <- lazyarray(tempfile(), storage_format = 'double', dim = c(3,3,3))
+#' x <- farray(tempfile(), storage_format = 'double', dim = c(3,3,3))
 #' x[] <- 1:27
 #' partition_table(x, quiet=TRUE)
 #'
@@ -103,7 +103,7 @@ partition_table.AbstractLazyArray <- function(x, na.rm = FALSE, ...){
 #' }, partitions = c(1,2,4,5))
 #'
 #' # -------------------------- LazyArray ---------------------------
-#' x <- lazyarray(tempfile(), storage_format = 'complex', dim = c(2,3,4))
+#' x <- farray(tempfile(), storage_format = 'complex', dim = c(2,3,4))
 #' x[] <- 1:24 + (24:1) * 1i
 #'
 #' partition_map(x, function(slice, part){

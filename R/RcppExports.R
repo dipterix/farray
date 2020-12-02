@@ -5,10 +5,6 @@ loc2idx3 <- function(locations, parent_dim) {
     .Call(`_farray_loc2idx3`, locations, parent_dim)
 }
 
-extractSlices <- function(listOrEnv, ndims) {
-    .Call(`_farray_extractSlices`, listOrEnv, ndims)
-}
-
 parseSlices <- function(listOrEnv, dim, pos_subscript = TRUE) {
     .Call(`_farray_parseSlices`, listOrEnv, dim, pos_subscript)
 }
@@ -71,10 +67,6 @@ tik <- function() {
 
 tok <- function(msg, stop = FALSE) {
     .Call(`_farray_tok`, msg, stop)
-}
-
-subsetAssignVector <- function(x, start, value) {
-    .Call(`_farray_subsetAssignVector`, x, start, value)
 }
 
 # Register entry points for exported C++ functions

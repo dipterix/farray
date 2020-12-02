@@ -9,7 +9,7 @@ AbstractLazyArray <- R6::R6Class(
     .backend = "abstract",
     .valid = TRUE,
     .path = character(0),
-    .meta_name = 'lazyarray.meta',
+    .meta_name = 'farray.meta',
     .file_format = '',
     .storage_format = character(0),
     .read_only = TRUE,
@@ -138,9 +138,8 @@ AbstractLazyArray <- R6::R6Class(
       re
     },
 
-    initialize = function(path, dim, storage_format = c('double', 'integer', 'complex', 'character'),
-                          read_only = TRUE, meta_name = 'lazyarray.meta'){
-      storage_format <- match.arg(storage_format)
+    initialize = function(path, dim, storage_format = 'double',
+                          read_only = TRUE, meta_name = 'farray.meta'){
       private$.meta_name <- meta_name
       private$.read_only <- read_only
       if(!dir.exists(path)){

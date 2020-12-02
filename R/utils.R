@@ -34,7 +34,7 @@ make_chunks <- function(dim, chunk_size, max_nchunks = 200, recursive = FALSE){
   }
 
   if(missing(chunk_size)){
-    chunk_size <- getOption('lazyarray.chunk_memory', 80) * 125000
+    chunk_size <- getOption('farray.chunk_memory', 80) * 125000
   }
 
 
@@ -140,7 +140,7 @@ make_chunks <- function(dim, chunk_size, max_nchunks = 200, recursive = FALSE){
 
 lapply2 <- function(x, FUN, ...){
   if( length(x) > 1 && has_dipsaus() ){
-    dipsaus::lapply_async2(x, FUN, FUN.args = list(...), plan = getOption('lazyarray.parallel.strategy', FALSE))
+    dipsaus::lapply_async2(x, FUN, FUN.args = list(...), plan = getOption('farray.parallel.strategy', FALSE))
   } else {
     lapply(x, FUN, ...)
   }

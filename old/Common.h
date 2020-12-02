@@ -53,7 +53,7 @@ const static int64_t INTEGER64_ONE = 1;
  *
  * Within partition can store [288 x 224] = [16*18  x 32*7] elements
  *
- * Unlike lazyarray, *always* index arrays
+ * Unlike farray, *always* index arrays
  *
  * bufferSize = Single buffer size = bLength
  * total buffer size is bufferSize * nThreads (# of threads)

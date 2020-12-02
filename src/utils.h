@@ -6,12 +6,6 @@
 
 // [[Rcpp::interfaces(r, cpp)]]
 
-template <typename T, typename I>
-bool contains(T vec, SEXP el);
-
-SEXP getListElement(SEXP list, const char *str);
-SEXP getListElement2(SEXP list, const char *str, const SEXP ifNull);
-
 // [[Rcpp::export]]
 SEXP dropDimension(SEXP x);
 
@@ -35,12 +29,6 @@ SEXP tok(std::string msg, bool stop = false);
 
 std::string as_dirpath(std::string x);
 
-SEXP captureException( const std::exception& e );
-SEXP makeException( std::string msg );
-
-// [[Rcpp::export]]
-SEXP subsetAssignVector(SEXP x, int64_t start, SEXP value);
-
 template <typename T>
 inline std::vector<T> seq_len3(int64_t n){
   std::vector<T> re = std::vector<T>(n);
@@ -52,11 +40,5 @@ inline std::vector<T> seq_len3(int64_t n){
 }
 
 void setReIm(Rcpp::ComplexVector x, Rcpp::NumericVector v, bool is_real);
-
-inline void r_gc(){
-  Rcpp::Environment env = Rcpp::Environment::base_env();
-  Rcpp::Function gc = env["gc"];
-  gc();
-}
 
 #endif // DIP_LAZYARRAY_UTILS_H

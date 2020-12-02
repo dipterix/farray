@@ -1,34 +1,32 @@
-#' @title Create or load a \code{lazyarray} instance
+#' @title Create or load a \code{farray} instance
 #' @author Zhengjia Wang
 #'
-#' @description Creates or load a \code{lazyarray} that stores data on the hard
+#' @description Creates or load a \code{farray} that stores data on the hard
 #' disks. The data content is load on demand.
 #'
 #' @param path path to a local drive where array data should be stored
 #' @param x An R matrix or array
 #' @param dim integer vector, dimension of array, see \code{\link{dim}}
-#' @param type the back-end implementation of the array; choices are
-#' \code{"filearray"} and \code{"fstarray"}.
 #' @param storage_format data type, choices are \code{"double"},
 #' \code{"integer"}, \code{"character"}, and \code{"complex"}; see details
 #' @param read_only whether created array is read-only
-#' @param meta_name header file name, default is \code{"lazyarray.meta"}
-#' @param ... passed into \code{lazyarray}
+#' @param meta_name header file name, default is \code{"farray.meta"}
+#' @param ... passed into \code{farray}
 #'
-#' @return An \code{R6} class of \code{lazyarray}. The class name is either
+#' @return An \code{R6} class of \code{farray}. The class name is either
 #' \code{FstArray} or \code{FileArray}, depending on \code{type} specified.
 #' Both inherit \code{AbstractLazyArray}.
 #'
-#' @details The function \code{lazyarray()} can either create or load an array
+#' @details The function \code{farray()} can either create or load an array
 #' on the hard drives. When \code{path} exists as a directory, and there is
-#' a valid array instance stored, \code{lazyarray} will ignore other parameters
+#' a valid array instance stored, \code{farray} will ignore other parameters
 #' such as \code{storage_format}, \code{type}, and sometimes \code{dim} (see
 #' Section "Array Partitions"). The function will try to load the existing array
 #' given by the descriptive meta file. When \code{path} is missing or there is
 #' no valid array files inside of the directory, then a new array will be
 #' spawned, and \code{path} will be created automatically if it is missing.
 #'
-#' There are two back-end implementations for \code{lazyarray()}:
+#' There are two back-end implementations for \code{farray()}:
 #' \code{"filearray"} and \code{"fstarray"}. You can use \code{type} to
 #' specify which implementation serves your needs. There are some differences
 #' between these two types. Each one has its own strengths and weaknesses.
@@ -65,7 +63,7 @@
 #'
 #' @section Array Partitions:
 #'
-#' A \code{lazyarray} partitions data in two ways: file partitions and in-file
+#' A \code{farray} partitions data in two ways: file partitions and in-file
 #' blocks.
 #'
 #' 1. File-level Partition:
@@ -83,7 +81,7 @@
 #' \eqn{10000 x 60}, \eqn{2000 x 300}, or \eqn{1000 x 200 x 3} as
 #' long as the total length matches. The total partitions can change to
 #' 3, 5, or 100, or any positive integer. To change the total dimension to
-#' \eqn{2400000 x 100}, you can call \code{lazyarray} with the new dimension (
+#' \eqn{2400000 x 100}, you can call \code{farray} with the new dimension (
 #' see examples). Please make sure the \code{type} and \code{meta_name} are
 #' specified.
 #'
@@ -97,7 +95,7 @@
 #' 200 blocks, each block has 100 elements
 #'
 #' As for \code{fstarray}, the lower bound of block size can be set by
-#' \code{options(lazyarray.fstarray.blocksize=...)}. By default, this number is
+#' \code{options(farray.fstarray.blocksize=...)}. By default, this number is
 #' 16,384. For a \eqn{100 x 200 x 3} array, each partition only has one block
 #' and block number if 20,000.
 #'
@@ -113,12 +111,12 @@
 #'
 #' @examples
 #'
-#' library(lazyarray)
+#' library(farray)
 #'
 #' path <- tempfile()
 #'
 #' # ---------------- case 1: Create new array ------------------
-#' arr <- lazyarray(path, storage_format = 'double', dim = c(2,3,4))
+#' arr <- farray(path, storage_format = 'double', dim = c(2,3,4))
 #' arr[] <- 1:24
 #'
 #' # Subset and get the first partition
@@ -132,7 +130,7 @@
 #'
 #' # ---------------- Case 2: Load from existing directory ----------------
 #' # Load from existing path, no need to specify other params
-#' arr <- lazyarray(path, read_only = TRUE)
+#' arr <- farray(path, read_only = TRUE)
 #'
 #' summary(arr, quiet = TRUE)
 #'
@@ -140,7 +138,7 @@
 #'
 #' # Change dimension to 6 x 20
 #'
-#' arr1 <- lazyarray(path, dim = c(6,20), meta_name = "arr_6x20.meta")
+#' arr1 <- farray(path, dim = c(6,20), meta_name = "arr_6x20.meta")
 #'
 #' arr1[,1:5]
 #'
@@ -153,27 +151,18 @@
 #' # ---------------- Case 4: Converting from R arrays ----------------
 #'
 #' x <- matrix(1:16, 4)
-#' x <- as.lazymatrix(x, type = 'fstarray', storage_format = "complex")
+#' x <- as.fmatrix(x, storage_format = "complex")
 #' x[,]  # or x[]
 #'
 #'
 #'
 #' @export
-lazyarray <- function(
-  path, dim, read_only = FALSE, type = "filearray",
+farray <- function(
+  path, dim, read_only = FALSE,
   storage_format = 'double',
-  meta_name = 'lazyarray.meta'){
+  meta_name = 'farray.meta'){
 
   call <- match.call()
-  if(!missing(type)) {
-    call[["type"]] <- NULL
-    has_type <- TRUE
-  } else {
-    has_type <- FALSE
-  }
-
-  type <- match.arg(type)
-  storage_format <- match.arg(storage_format)
 
   if(!storage_format %in% c("integer", "double")){
     stop("FileArray only support `integer` or `double` data types.")
@@ -183,13 +172,12 @@ lazyarray <- function(
   eval(call)
 }
 
-#' @rdname lazyarray
+#' @rdname farray
 #' @export
 filearray <- function(
   path, dim, read_only = FALSE,
-  storage_format = c('double', 'integer'),
-  meta_name = 'lazyarray.meta'){
-  storage_format <- match.arg(storage_format)
+  storage_format = 'double',
+  meta_name = 'farray.meta'){
   if (missing(dim)) {
     re <-
       FileArray$new(
@@ -214,7 +202,7 @@ filearray <- function(
   re
 }
 
-#' @rdname lazyarray
+#' @rdname farray
 #' @export
 as.lazymatrix <- function(x, ...){
   UseMethod("as.lazymatrix")
@@ -222,7 +210,7 @@ as.lazymatrix <- function(x, ...){
 
 #' @export
 as.lazymatrix.default <- function(x, ...){
-  re <- as.lazyarray(x, ...)
+  re <- as.farray(x, ...)
   as.lazymatrix.AbstractLazyArray(re)
 }
 
@@ -235,14 +223,14 @@ as.lazymatrix.AbstractLazyArray <- function(x, ...){
 }
 
 
-#' @rdname lazyarray
+#' @rdname farray
 #' @export
-as.lazyarray <- function(x, path, type = "filearray", ...){
-  UseMethod("as.lazyarray")
+as.farray <- function(x, path, ...){
+  UseMethod("as.farray")
 }
 
 #' @export
-as.lazyarray.default <- function(x, path, type = "filearray", dim, storage_format, ...){
+as.farray.default <- function(x, path, dim, storage_format, ...){
 
   if(missing(path)){
     path <- tempfile()
@@ -260,7 +248,7 @@ as.lazyarray.default <- function(x, path, type = "filearray", dim, storage_forma
   }
 
 
-  re <- lazyarray(path, dim = dim, storage_format = storage_format, type = type, ...)
+  re <- farray(path, dim = dim, storage_format = storage_format, ...)
   dim(x) <- dim
   re[] <- x
   re
@@ -268,10 +256,7 @@ as.lazyarray.default <- function(x, path, type = "filearray", dim, storage_forma
 }
 
 #' @export
-as.lazyarray.AbstractLazyArray <- function(x, path, type = "filearray", ...){
-  if(!missing(type)){
-    warning("x is already a lazyarray, type will be ignored")
-  }
+as.farray.AbstractLazyArray <- function(x, path, ...){
   x
 }
 
