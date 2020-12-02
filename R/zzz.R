@@ -1,4 +1,3 @@
-# Rcpp::loadModule('LazyArrayModules', TRUE)
 
 .onUnload <- function (libpath) {
   library.dynam.unload("farray", libpath)
@@ -11,7 +10,7 @@
 
   ncores <- parallel::detectCores(logical = TRUE)
   options('farray.nthreads' = ncores)
-  set_lazy_threads(ncores, TRUE)
+  set_farray_threads(ncores, TRUE)
 }
 
 
@@ -28,7 +27,7 @@
 #' @param ... Further passed to \code{\link[future]{plan}}
 #'
 #' @export
-lazy_parallel <- function(
+farray_parallel <- function(
   strategy = c(
     'multisession', 'multicore',
     'multiprocess', 'cluster', 'remote', 'callr'),
@@ -36,7 +35,7 @@ lazy_parallel <- function(
   ...
 ){
 
-  options('lazyarray.parallel.strategy' = FALSE)
+  options('farray.parallel.strategy' = FALSE)
   strategy <- match.arg(strategy)
   if(!has_dipsaus()){
     stop('Package dipsaus not detected. Please install.packages("dipsaus")')
@@ -52,7 +51,8 @@ lazy_parallel <- function(
     if(strategy == 'multicore'){
       dipsaus::make_forked_clusters(..., workers = workers)
     } else if(strategy == 'callr'){
-      future::plan(future.callr::callr, ..., workers = workers)
+      callr <- import_from('callr', package = 'future.callr')
+      future::plan(callr, ..., workers = workers)
     } else {
       args <- list(...)
       tryCatch({
@@ -69,7 +69,7 @@ lazy_parallel <- function(
   invisible()
 }
 
-setOldClass(c('FileArray', 'AbstractLazyArray', 'R6'))
+setOldClass(c('FileArray', 'AbstractFArray', 'R6'))
 
 
 setGeneric("typeof")
@@ -79,7 +79,7 @@ setGeneric("typeof")
 #' @param x a \code{LazyArray} or an R object
 #' @return The type of data stored in the input
 #' @exportMethod typeof
-setMethod("typeof", signature(x="AbstractLazyArray"), function(x){
+setMethod("typeof", signature(x="AbstractFArray"), function(x){
   x$storage_format
 })
 
@@ -101,18 +101,18 @@ setGeneric("crossprod")
 #' x <- matrix(1:100, 50)
 #' crossprod(x)
 #'
-#' lazy_x <- as.lazymatrix(x)
-#' crossprod(lazy_x)[]
+#' fmat_x <- as.fmatrix(x)
+#' crossprod(fmat_x)[]
 #'
 #' weights <- (1:50)/50
 #'
 #' t(x) %*% diag(weights) %*% x
-#' crossprod(lazy_x, weights = weights)
+#' crossprod(fmat_x, weights = weights)
 #'
 #' \dontrun{
 #'
 #' # large data set ~ 1.6GB
-#' x <- as.lazymatrix(matrix(rnorm(2e8), ncol = 2))
+#' x <- as.fmatrix(matrix(rnorm(2e8), ncol = 2))
 #'
 #' crossprod(x)
 #' }
@@ -122,25 +122,25 @@ NULL
 
 #' @rdname crossprod
 #' @exportMethod crossprod
-setMethod("crossprod", signature(x="AbstractLazyArray", y = 'AbstractLazyArray'), function(x, y = NULL, weights = NULL, ...){
-  lazy_crossprod(x, y, weights = weights, ...)
+setMethod("crossprod", signature(x="AbstractFArray", y = 'AbstractFArray'), function(x, y = NULL, weights = NULL, ...){
+  farray_crossprod(x, y, weights = weights, ...)
 })
 
 #' @rdname crossprod
 #' @exportMethod crossprod
-setMethod("crossprod", signature(x="AbstractLazyArray", y = 'NULL'), function(x, y = NULL, weights = NULL, ...){
-  lazy_crossprod(x, NULL, weights = weights, ...)
+setMethod("crossprod", signature(x="AbstractFArray", y = 'NULL'), function(x, y = NULL, weights = NULL, ...){
+  farray_crossprod(x, NULL, weights = weights, ...)
 })
 
 #' @rdname crossprod
 #' @exportMethod crossprod
-setMethod("crossprod", signature(x="AbstractLazyArray", y = "missing"), function(x, y = NULL, weights = NULL, ...){
-  lazy_crossprod(x, NULL, weights = weights, ...)
+setMethod("crossprod", signature(x="AbstractFArray", y = "missing"), function(x, y = NULL, weights = NULL, ...){
+  farray_crossprod(x, NULL, weights = weights, ...)
 })
 
 #' @rdname crossprod
 #' @exportMethod crossprod
-setMethod("crossprod", signature(x="AbstractLazyArray", y = 'matrix'), function(x, y = NULL, weights = NULL, ...){
+setMethod("crossprod", signature(x="AbstractFArray", y = 'matrix'), function(x, y = NULL, weights = NULL, ...){
   if(!is.null(weights)){
     stopifnot(length(weights) == x$partition_length)
     res <- lapply(seq_len(x$npart), function(ii){
@@ -156,20 +156,20 @@ setMethod("crossprod", signature(x="AbstractLazyArray", y = 'matrix'), function(
 })
 
 
-lazy_crossprod <- function(x, y = NULL, weights = NULL, ...){
+farray_crossprod <- function(x, y = NULL, weights = NULL, ...){
 
   if(!is.null(weights)){
     stopifnot(length(weights) == x$partition_length)
   }
 
-  new_x <- as.lazymatrix(x)
+  new_x <- as.fmatrix(x)
   new_x$make_readonly()
   if(is.null(y)){
     yisx <- TRUE
     new_y <- new_x
   } else {
     yisx <- isTRUE(x$storage_path == y$storage_path && x$get_file_format() == y$get_file_format())
-    new_y <- as.lazymatrix(y)
+    new_y <- as.fmatrix(y)
   }
 
   if(length(weights)){

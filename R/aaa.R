@@ -17,7 +17,18 @@ has_dipsaus <- function(){
   system.file('', package = 'dipsaus') != ''
 }
 
-#' @title Set Number of Threads for Lazy Arrays
+import_from <- function(name, default = NULL, package) {
+  ns <- getNamespace(package)
+  if (exists(name, mode = "function", envir = ns, inherits = FALSE)) {
+    get(name, mode = "function", envir = ns, inherits = FALSE)
+  } else if (!is.null(default)) {
+    default
+  } else {
+    stop(sprintf("No such '%s' function: %s(). Please check whether package `%s` is installed.", package, name, package))
+  }
+}
+
+#' @title Set Number of Threads for \code{'farray'}
 #' @description Set number of threads used by 'OpenMP'
 #' @param nr_of_threads number of CPU cores to use, or \code{NULL} to
 #' stay unchanged, default is \code{getOption('farray.nthreads')}
@@ -26,7 +37,7 @@ has_dipsaus <- function(){
 #' @return Number of cores currently used.
 #' @name farray-threads
 #' @export
-set_lazy_threads <- function(nr_of_threads = getOption('farray.nthreads'), reset_after_fork = NULL){
+set_farray_threads <- function(nr_of_threads = getOption('farray.nthreads'), reset_after_fork = NULL){
   if(!is.null(reset_after_fork)){
     reset_after_fork <- isTRUE(reset_after_fork)
   }
@@ -34,14 +45,14 @@ set_lazy_threads <- function(nr_of_threads = getOption('farray.nthreads'), reset
     nr_of_threads <- future::availableCores()
   }
   nr_of_threads = max(nr_of_threads, 1)
-  setLazyThread(n = nr_of_threads, reset_after_fork = reset_after_fork)
-  getLazyThread()
+  setFArrayThread(n = nr_of_threads, reset_after_fork = reset_after_fork)
+  getFArrayThread()
 }
 
 #' @rdname farray-threads
 #' @export
-get_lazy_threads <- function(max = FALSE){
-  getLazyThread(max = isTRUE(max))
+get_farray_threads <- function(max = FALSE){
+  getFArrayThread(max = isTRUE(max))
 }
 
 get_missing_value <- function(){
@@ -79,21 +90,21 @@ rand_string <- function(length = 50){
 #' arr_dbl[] <- 1:24
 #' auto_clear_farray(arr_dbl)
 #'
-#' arr_chr <- farray(path, storage_format = 'character',
-#'                      dim = 2:4, meta_name = 'meta-chr.meta')
-#' auto_clear_farray(arr_chr)
+#' arr_dbl2 <- farray(path, storage_format = 'double',
+#'                      dim = 2:4, meta_name = 'meta-2.meta')
+#' auto_clear_farray(arr_dbl2)
 #'
 #' # remove either one, the directory still exists
 #' rm(arr_dbl); invisible(gc(verbose = FALSE))
 #'
-#' arr_chr[1,1,1]
+#' arr_dbl2[1,1,1]
 #'
 #' # Remove the other one, and path will be removed
-#' rm(arr_chr); invisible(gc(verbose = FALSE))
+#' rm(arr_dbl2); invisible(gc(verbose = FALSE))
 #'
 #' dir.exists(path)
-#' arr_check <- farray(path, storage_format = 'character',
-#'                        dim = 2:4, meta_name = 'meta-chr')
+#' arr_check <- farray(path, storage_format = 'double',
+#'                        dim = 2:4, meta_name = 'meta-2.meta')
 #'
 #' # data is removed, so there should be no data (NAs)
 #' arr_check[]

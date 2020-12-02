@@ -1,9 +1,9 @@
 #' @noRd
-#' @title Internal Class definition for \code{AbstractLazyArray}
+#' @title Internal Class definition for \code{AbstractFArray}
 #' @author Zhengjia Wang
-#' @description Internal class definition of lazy array objects
-AbstractLazyArray <- R6::R6Class(
-  classname = "AbstractLazyArray",
+#' @description Internal class definition of \code{'farray'} objects
+AbstractFArray <- R6::R6Class(
+  classname = "AbstractFArray",
   portable = TRUE,
   private = list(
     .backend = "abstract",
@@ -36,7 +36,7 @@ AbstractLazyArray <- R6::R6Class(
     },
 
     print = function(...){
-      cat("<LazyArray> (", private$.storage_format, ')\n', sep = '')
+      cat("<FArray> (", private$.storage_format, ')\n', sep = '')
       cat('Dimension:\t', paste(sprintf('%d ', private$.dim), collapse = 'x '), '\n')
       invisible(self)
     },
@@ -94,7 +94,7 @@ AbstractLazyArray <- R6::R6Class(
         private$.valid <- FALSE
       }
       if(warn && dir.exists(private$.path)){
-        warning("LazyArray not fully cleaned at: ", private$.path,
+        warning("FArray not fully cleaned at: ", private$.path,
                 '. Some files noted created by this array were detected. ',
                 'Please manually remove them if they are no longer used.')
       }
@@ -266,7 +266,7 @@ AbstractLazyArray <- R6::R6Class(
       ndims <- length(dim)
       idx <- ndims - which(cumprod(rev(dim)) >= nchunks)[[1]] + 1
 
-      self_m <- as.lazymatrix(self, type = self$backend)
+      self_m <- as.fmatrix(self, type = self$backend)
       if(idx == 1){
         lapply2(seq_len(chunkf$nchunks), function(ii){
           idx_range <- chunkf$get_indices(ii, as_numeric = TRUE)[[1]]
@@ -516,12 +516,12 @@ AbstractLazyArray <- R6::R6Class(
 
 
 #' @export
-dim.AbstractLazyArray <- function(x){
+dim.AbstractFArray <- function(x){
   x$dim
 }
 
 #' @export
-`dim<-.AbstractLazyArray` <- function(x, value){
+`dim<-.AbstractFArray` <- function(x, value){
   stopifnot(length(value) >= 2)
   tmp <- value
   tmp[[length(tmp)]] <- 1
@@ -535,7 +535,7 @@ dim.AbstractLazyArray <- function(x){
 }
 
 #' @export
-`dimnames<-.AbstractLazyArray` <- function(x, value){
+`dimnames<-.AbstractFArray` <- function(x, value){
   if(!is.null(value)){
     name_length <- sapply(value, length)
     if(!all(name_length == 0 | name_length == x$dim)){
@@ -548,17 +548,17 @@ dim.AbstractLazyArray <- function(x){
 
 
 #' @export
-dimnames.AbstractLazyArray <- function(x){
+dimnames.AbstractFArray <- function(x){
   x$dimnames
 }
 
 #' @export
-length.AbstractLazyArray <- function(x){
+length.AbstractFArray <- function(x){
   prod(x$dim)
 }
 
 #' @export
-subset.AbstractLazyArray <- function(x, ..., env = parent.frame(), drop = FALSE){
+subset.AbstractFArray <- function(x, ..., env = parent.frame(), drop = FALSE){
   formats <- list(...)
   dnams <- x$dimnames
   nms <- names(dnams)
@@ -576,7 +576,7 @@ subset.AbstractLazyArray <- function(x, ..., env = parent.frame(), drop = FALSE)
 
   for(fmt in formats){
     if(!identical(fmt[[1]], quote(`~`))){
-      stop("Subset formula ", deparse1(fmt), " is invalid for subsetting a lazy array. Use some thing like 'var ~ var < 2'")
+      stop("Subset formula ", deparse1(fmt), " is invalid for subsetting a farray. Use some thing like 'var ~ var < 2'")
     }
     fmt[[1]] <- quote(`=`)
     tmp_env <- new.env(parent = d_env)
@@ -602,7 +602,7 @@ subset.AbstractLazyArray <- function(x, ..., env = parent.frame(), drop = FALSE)
 }
 
 #' @export
-max.AbstractLazyArray <- function(x, cache = TRUE, ..., na.rm = FALSE){
+max.AbstractFArray <- function(x, cache = TRUE, ..., na.rm = FALSE){
 
   dim <- x$dim
   len <- prod(dim)
@@ -631,7 +631,7 @@ max.AbstractLazyArray <- function(x, cache = TRUE, ..., na.rm = FALSE){
 
 
 #' @export
-min.AbstractLazyArray <- function(x, cache = TRUE, ..., na.rm = FALSE){
+min.AbstractFArray <- function(x, cache = TRUE, ..., na.rm = FALSE){
   dim <- x$dim
   len <- prod(dim)
 
@@ -656,7 +656,7 @@ min.AbstractLazyArray <- function(x, cache = TRUE, ..., na.rm = FALSE){
 }
 
 #' @export
-range.AbstractLazyArray <- function(x, cache = TRUE, ..., na.rm = FALSE){
+range.AbstractFArray <- function(x, cache = TRUE, ..., na.rm = FALSE){
   min <- min(x, na.rm = na.rm, cache = cache)
   if(is.na(min)){ re <- c(NA, NA) } else {
     re <- c(min, max(x, na.rm = na.rm, cache = TRUE))
@@ -669,7 +669,7 @@ range.AbstractLazyArray <- function(x, cache = TRUE, ..., na.rm = FALSE){
 }
 
 #' @export
-mean.AbstractLazyArray <- function(x, cache = TRUE, ..., na.rm = FALSE){
+mean.AbstractFArray <- function(x, cache = TRUE, ..., na.rm = FALSE){
   mx <- lapply2(seq_len(x$npart), function(part){
     x$get_partition_summary(part = part, types = c('mean', 'nas', 'length'), show_warn = FALSE, cache = cache)
   })
@@ -698,7 +698,7 @@ mean.AbstractLazyArray <- function(x, cache = TRUE, ..., na.rm = FALSE){
 }
 
 #' @export
-sum.AbstractLazyArray <- function(x, cache = TRUE, ..., na.rm = FALSE){
+sum.AbstractFArray <- function(x, cache = TRUE, ..., na.rm = FALSE){
   m <- mean(x, ..., na.rm = na.rm, cache = cache)
 
   if(!is.na(m)){
@@ -713,7 +713,7 @@ sum.AbstractLazyArray <- function(x, cache = TRUE, ..., na.rm = FALSE){
 
 
 #' @export
-head.AbstractLazyArray <- function(x, n = 2L, ...){
+head.AbstractFArray <- function(x, n = 2L, ...){
   dm <- x$dim
   dm <- lapply(dm, function(ii){
     seq_len(min(ii, n))
@@ -728,7 +728,7 @@ head.AbstractLazyArray <- function(x, n = 2L, ...){
 }
 
 #' @export
-tail.AbstractLazyArray <- function(x, n = 2L, ...){
+tail.AbstractFArray <- function(x, n = 2L, ...){
   dm <- x$dim
   dm <- lapply(dm, function(ii){
     if(ii <= 0){ return(integer(0)) }
@@ -744,7 +744,7 @@ tail.AbstractLazyArray <- function(x, n = 2L, ...){
 }
 
 #' @export
-summary.AbstractLazyArray <- function(object, cache = TRUE, quiet = FALSE, ...){
+summary.AbstractFArray <- function(object, cache = TRUE, quiet = FALSE, ...){
   if(!quiet){
     if(cache){
       message("Summary data is generated from cache. If you have changed data recently, please re-cache")
@@ -761,7 +761,7 @@ summary.AbstractLazyArray <- function(object, cache = TRUE, quiet = FALSE, ...){
     class = class(object),
     cache = cache,
     quiet = quiet
-  ), class = 'LazyArray-summary')
+  ), class = 'FArray-summary')
 
   x$partitions = t(sapply(seq_len(object$npart), function(ii){
     unlist(object$get_partition_summary(
@@ -783,7 +783,7 @@ summary.AbstractLazyArray <- function(object, cache = TRUE, quiet = FALSE, ...){
 }
 
 #' @export
-`print.LazyArray-summary` <- function(x, n = 5L, ...){
+`print.FArray-summary` <- function(x, n = 5L, ...){
   cat(sprintf('Class:      [%s]\n', paste(x$class, collapse = ' -> ')))
   cat(sprintf('Type:       [%s]\n', x$storage_format))
   cat(sprintf('Dimension:  [%s]\n', paste(x$dim, collapse = ' x ')))

@@ -11,7 +11,7 @@ test_that("Loader2", {
 
   f <- normalizePath(tempfile(), mustWork = FALSE)
   on.exit({
-    setLazyBlockSize(-1)
+    setFArrayBlockSize(-1)
     unlink(f)
   })
 
@@ -21,7 +21,7 @@ test_that("Loader2", {
     farray:::subsetFM(a$storage_path, environment(), dim, getSexpType(samp), reshape, drop)
   }
 
-  lazy_test_unit <- function(samp_data, x_alt){
+  farray_test_unit <- function(samp_data, x_alt){
     loader_double = function(..., reshape = NULL, drop = FALSE){ loader_f(samp = samp_data, ..., reshape = reshape, drop = drop) }
     if(missing(x_alt)){
       x <- x; storage.mode(x) <- storage.mode(samp_data)
@@ -171,72 +171,72 @@ test_that("Loader2", {
   }
 
   #### no sub-blocks
-  # lazy_test_unit(0.1)
-  lazy_test_unit(1L)
-  # lazy_test_unit("")
+  # farray_test_unit(0.1)
+  farray_test_unit(1L)
+  # farray_test_unit("")
 
   #### sub-blocks
-  setLazyBlockSize(1)
-  # lazy_test_unit(0.1)
-  lazy_test_unit(1L)
-  # lazy_test_unit("")
+  setFArrayBlockSize(1)
+  # farray_test_unit(0.1)
+  farray_test_unit(1L)
+  # farray_test_unit("")
 
-  setLazyBlockSize(11)
-  # lazy_test_unit(0.1)
-  lazy_test_unit(1L)
-  # lazy_test_unit("")
+  setFArrayBlockSize(11)
+  # farray_test_unit(0.1)
+  farray_test_unit(1L)
+  # farray_test_unit("")
 
-  setLazyBlockSize(201)
-  # lazy_test_unit(0.1)
-  lazy_test_unit(1L)
-  # lazy_test_unit("")
+  setFArrayBlockSize(201)
+  # farray_test_unit(0.1)
+  farray_test_unit(1L)
+  # farray_test_unit("")
 
-  setLazyBlockSize(-1)
+  setFArrayBlockSize(-1)
 
   #### sub-blocks With NAs
   unlink(a$get_partition_fpath(2))
-  setLazyBlockSize(1)
+  setFArrayBlockSize(1)
   x[,,2] <- NA
   expect_equal(x[], a[])
-  # lazy_test_unit(0.1, x)
-  lazy_test_unit(1L, x)
-  # lazy_test_unit("", x)
+  # farray_test_unit(0.1, x)
+  farray_test_unit(1L, x)
+  # farray_test_unit("", x)
 
-  setLazyBlockSize(-1)
+  setFArrayBlockSize(-1)
   x[,,2] <- NA
   expect_equal(x[], a[])
-  # lazy_test_unit(0.1, x)
-  lazy_test_unit(1L, x)
-  # lazy_test_unit("", x)
+  # farray_test_unit(0.1, x)
+  farray_test_unit(1L, x)
+  # farray_test_unit("", x)
 
 
   ##### Complex?0
   # x = array(rnorm(prod(dim)), dim) + 1i * array(rnorm(prod(dim)), dim)
   # unlink(f, recursive = TRUE)
   # a = as.farray(x, path = f)
-  # setLazyBlockSize(-1)
-  # lazy_test_unit(x[[1]])
+  # setFArrayBlockSize(-1)
+  # farray_test_unit(x[[1]])
   #
-  # setLazyBlockSize(1)
-  # lazy_test_unit(x[[1]])
+  # setFArrayBlockSize(1)
+  # farray_test_unit(x[[1]])
   #
-  # setLazyBlockSize(11)
-  # lazy_test_unit(x[[1]])
+  # setFArrayBlockSize(11)
+  # farray_test_unit(x[[1]])
   #
-  # setLazyBlockSize(201)
-  # lazy_test_unit(x[[1]])
+  # setFArrayBlockSize(201)
+  # farray_test_unit(x[[1]])
   #
-  # setLazyBlockSize(1)
+  # setFArrayBlockSize(1)
   # unlink(a$get_partition_fpath(2))
   # x[,,2] <- NA
   # expect_equal(x[], a[])
-  # lazy_test_unit(x[[1]], x)
+  # farray_test_unit(x[[1]], x)
   #
-  # setLazyBlockSize(-1)
+  # setFArrayBlockSize(-1)
   # unlink(a$get_partition_fpath(2))
   # x[,,2] <- NA
   # expect_equal(x[], a[])
-  # lazy_test_unit(x[[1]], x)
+  # farray_test_unit(x[[1]], x)
 
   #### with matrix
   x <- matrix(1:16,4)

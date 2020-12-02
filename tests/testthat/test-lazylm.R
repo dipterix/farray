@@ -1,10 +1,10 @@
 
-test_that("lazylm", {
+test_that("farray_lm", {
 
   # use a baseenv to evaluate
   env <- new.env(parent = asNamespace('farray'))
   with(env, {
-    lazylm( V1 ~ .-V2-1 + (V2 > 0), data = local({
+    farray_lm( V1 ~ .-V2-1 + (V2 > 0), data = local({
       arr <- array(rnorm(72), c(6,3,4))
       arr[1,1,1] <- NA
       as.farray(arr)
@@ -27,10 +27,10 @@ test_that("lazylm", {
 
   e <- eigen(crossprod(arr[complete.cases(arr), ]))
   # if(!min(e$values > 1e-7)){
-  #   skip("Generated eigenvalue for lazylm is too small, just skip this time")
+  #   skip("Generated eigenvalue for farray_lm is too small, just skip this time")
   # }
 
-  object <- lazylm(formula, data, weights = weights, offset = offset, na.action = na_action, fitted = TRUE)
+  object <- farray_lm(formula, data, weights = weights, offset = offset, na.action = na_action, fitted = TRUE)
 
 
   # Compare to stats::lm

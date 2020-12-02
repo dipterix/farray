@@ -1,11 +1,11 @@
 #' @noRd
 #' @title Internal Class definition for \code{FileArray}
 #' @author Zhengjia Wang
-#' @description Internal class definition of lazy array objects
+#' @description Internal class definition of \code{'farray'} objects
 FileArray <- R6::R6Class(
   classname = "FileArray",
   portable = TRUE,
-  inherit = AbstractLazyArray,
+  inherit = AbstractFArray,
   private = list(
     .backend = "filearray"
   ),
@@ -129,14 +129,14 @@ FileArray <- R6::R6Class(
   drop <- isTRUE(drop)
 
   # set block size to be the first margin to maximize reading speed
-  block_size <- getLazyBlockSize()
+  block_size <- getFArrayBlockSize()
   if(block_size >= dim(x)[[1]]){
     block_size <- dim(x)[[1]]
-    setLazyBlockSize(block_size)
+    setFArrayBlockSize(block_size)
 
     on.exit({
       # reset block size for farrays
-      setLazyBlockSize(-1)
+      setFArrayBlockSize(-1)
     }, add = TRUE)
   }
 

@@ -1,5 +1,5 @@
-#ifndef DIP_LAZYARRAY_COMMON_H
-#define DIP_LAZYARRAY_COMMON_H
+#ifndef DIP_FARRAY_COMMON_H
+#define DIP_FARRAY_COMMON_H
 
 // Common header that's required by all (most) files
 
@@ -7,11 +7,6 @@
 
 using namespace Rcpp;
 
-/*
- * Number of bytes fst uses to compress as a unit
- * We use it differently, basically 4x or 8x or 16x this number as our block size
- * to avoid repeating too many blocks
- */
 #ifndef NA_INTEGER64
 //undef NA_INTEGER64
 #define NA_INTEGER64 LLONG_MIN
@@ -30,14 +25,13 @@ using namespace Rcpp;
 #define LASUBMOD_MULTI 0
 #endif
 
-#ifdef LAZYARRAY_DEBUG
-#undef LAZYARRAY_DEBUG
+#ifdef FARRAY_DEBUG
+#undef FARRAY_DEBUG
 #endif
 
 /*
  * For array with dimension [287 x 200 x 601 x 84]
- * BLOCKSIZE decides the size of block to read into from fst file
- * because fst internally stores data in blocks, it's recommended to read blocks with size > 16384
+ * BLOCKSIZE decides the size of block to read into from partition file
  *
  * by default, this array will be split into 3 parts
  * [287 x 200 x 601 x 84] => [287 x 200] x [601 x 1] x [84]
@@ -67,10 +61,10 @@ const static R_xlen_t INTEGER_XLEN_ONE = 1;
 
 // [[Rcpp::interfaces(r, cpp)]]
 // [[Rcpp::export]]
-R_xlen_t setLazyBlockSize(R_xlen_t size);
+R_xlen_t setFArrayBlockSize(R_xlen_t size);
 
 // [[Rcpp::export]]
-R_xlen_t getLazyBlockSize();
+R_xlen_t getFArrayBlockSize();
 
 
-#endif // DIP_LAZYARRAY_COMMON_H
+#endif // DIP_FARRAY_COMMON_H

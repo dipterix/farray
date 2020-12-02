@@ -68,14 +68,14 @@ ScheduledIndex::ScheduledIndex(SEXP locations, const std::vector<int64_t>& dim, 
       warning("Scheduling index block: `MARGIN` must be strictly greater than 1 and less equal than the total dimensions");
     }
     for(buffer_margin = 0; buffer_margin < ndims - 1; buffer_margin++ ){
-      if(block_size > getLazyBlockSize()){
+      if(block_size > getFArrayBlockSize()){
         break;
       }
       block_size *= dim[buffer_margin];
     }
   } else {
     for(buffer_margin = 0; buffer_margin < ndims - 1; buffer_margin++ ){
-      if(block_size > getLazyBlockSize() || buffer_margin >= (hint - 1)){
+      if(block_size > getFArrayBlockSize() || buffer_margin >= (hint - 1)){
         break;
       }
       block_size *= dim[buffer_margin];

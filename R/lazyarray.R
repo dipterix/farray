@@ -13,9 +13,8 @@
 #' @param meta_name header file name, default is \code{"farray.meta"}
 #' @param ... passed into \code{farray}
 #'
-#' @return An \code{R6} class of \code{farray}. The class name is either
-#' \code{FstArray} or \code{FileArray}, depending on \code{type} specified.
-#' Both inherit \code{AbstractLazyArray}.
+#' @return An \code{R6} class of \code{farray}. The class name is
+#' \code{FileArray}, inherits \code{AbstractFArray}.
 #'
 #' @details The function \code{farray()} can either create or load an array
 #' on the hard drives. When \code{path} exists as a directory, and there is
@@ -26,18 +25,12 @@
 #' no valid array files inside of the directory, then a new array will be
 #' spawned, and \code{path} will be created automatically if it is missing.
 #'
-#' There are two back-end implementations for \code{farray()}:
-#' \code{"filearray"} and \code{"fstarray"}. You can use \code{type} to
-#' specify which implementation serves your needs. There are some differences
-#' between these two types. Each one has its own strengths and weaknesses.
-#' Please see Section "Array Types" for more details.
-#'
 #' The argument \code{meta_name} specifies the name of file which stores
 #' all the attribute information such as the total dimension, partition size,
 #' file format, and storage format etc. There could be multiple meta files for
 #' the same array object; see Section "Array Partitions" for details.
 #'
-#' @section Array Types:
+#' @section Performance:
 #'
 #' Type \code{filearray} stores data in its binary form "as-is" to the local
 #' drives. This format is compatible with the package \code{filematrix}.
@@ -151,7 +144,7 @@
 #' # ---------------- Case 4: Converting from R arrays ----------------
 #'
 #' x <- matrix(1:16, 4)
-#' x <- as.fmatrix(x, storage_format = "complex")
+#' x <- as.fmatrix(x)
 #' x[,]  # or x[]
 #'
 #'
@@ -204,18 +197,18 @@ filearray <- function(
 
 #' @rdname farray
 #' @export
-as.lazymatrix <- function(x, ...){
-  UseMethod("as.lazymatrix")
+as.fmatrix <- function(x, ...){
+  UseMethod("as.fmatrix")
 }
 
 #' @export
-as.lazymatrix.default <- function(x, ...){
+as.fmatrix.default <- function(x, ...){
   re <- as.farray(x, ...)
-  as.lazymatrix.AbstractLazyArray(re)
+  as.fmatrix.AbstractFArray(re)
 }
 
 #' @export
-as.lazymatrix.AbstractLazyArray <- function(x, ...){
+as.fmatrix.AbstractFArray <- function(x, ...){
   x <- x$clone()
   x$make_readonly()
   dim(x) <- c(x$partition_length, x$npart)
@@ -256,7 +249,7 @@ as.farray.default <- function(x, path, dim, storage_format, ...){
 }
 
 #' @export
-as.farray.AbstractLazyArray <- function(x, path, ...){
+as.farray.AbstractFArray <- function(x, path, ...){
   x
 }
 

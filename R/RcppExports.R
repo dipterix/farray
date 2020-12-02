@@ -17,24 +17,24 @@ reshapeOrDrop <- function(x, reshape = NULL, drop = FALSE) {
     .Call(`_farray_reshapeOrDrop`, x, reshape, drop)
 }
 
-setLazyBlockSize <- function(size) {
-    .Call(`_farray_setLazyBlockSize`, size)
+setFArrayBlockSize <- function(size) {
+    .Call(`_farray_setFArrayBlockSize`, size)
 }
 
-getLazyBlockSize <- function() {
-    .Call(`_farray_getLazyBlockSize`)
+getFArrayBlockSize <- function() {
+    .Call(`_farray_getFArrayBlockSize`)
 }
 
 subsetFM <- function(rootPath, listOrEnv, dim, dtype, reshape, drop) {
     .Call(`_farray_subsetFM`, rootPath, listOrEnv, dim, dtype, reshape, drop)
 }
 
-getLazyThread <- function(max = FALSE) {
-    .Call(`_farray_getLazyThread`, max)
+getFArrayThread <- function(max = FALSE) {
+    .Call(`_farray_getFArrayThread`, max)
 }
 
-setLazyThread <- function(n, reset_after_fork = NULL) {
-    .Call(`_farray_setLazyThread`, n, reset_after_fork)
+setFArrayThread <- function(n, reset_after_fork = NULL) {
+    .Call(`_farray_setFArrayThread`, n, reset_after_fork)
 }
 
 hasOpenMP <- function() {

@@ -1,5 +1,5 @@
-#ifndef DIP_LAZYARRAY_SCHEDULE_H
-#define DIP_LAZYARRAY_SCHEDULE_H
+#ifndef DIP_FARRAY_SCHEDULE_H
+#define DIP_FARRAY_SCHEDULE_H
 
 #include "common.h"
 
@@ -27,7 +27,7 @@ public:
   ScheduledIndex(SEXP locations, const std::vector<int64_t>& dim, bool forceSchedule = false, int64_t hint = -1);
 
   ~ScheduledIndex(){
-#ifdef LAZYARRAY_DEBUG
+#ifdef FARRAY_DEBUG
     print(wrap("A ScheduledIndex is destroyed"));
 #endif
   }
@@ -82,7 +82,7 @@ public:
       delete schedule;
       this->schedule = nullptr;
     }
-#ifdef LAZYARRAY_DEBUG
+#ifdef FARRAY_DEBUG
     print(wrap("A ParsedIndex is destroyed"));
 #endif
   }
@@ -125,4 +125,4 @@ ParsedIndex* parseAndScheduleBlocks(SEXP listOrEnv, const std::vector<int64_t>& 
 // [[Rcpp::export]]
 SEXP reshapeOrDrop(SEXP x, SEXP reshape = R_NilValue, bool drop = false);
 
-#endif // DIP_LAZYARRAY_SCHEDULE_H
+#endif // DIP_FARRAY_SCHEDULE_H

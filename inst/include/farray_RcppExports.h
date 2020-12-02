@@ -24,17 +24,17 @@ namespace farray {
         }
     }
 
-    inline R_xlen_t setLazyBlockSize(R_xlen_t size) {
-        typedef SEXP(*Ptr_setLazyBlockSize)(SEXP);
-        static Ptr_setLazyBlockSize p_setLazyBlockSize = NULL;
-        if (p_setLazyBlockSize == NULL) {
-            validateSignature("R_xlen_t(*setLazyBlockSize)(R_xlen_t)");
-            p_setLazyBlockSize = (Ptr_setLazyBlockSize)R_GetCCallable("farray", "_farray_setLazyBlockSize");
+    inline R_xlen_t setFArrayBlockSize(R_xlen_t size) {
+        typedef SEXP(*Ptr_setFArrayBlockSize)(SEXP);
+        static Ptr_setFArrayBlockSize p_setFArrayBlockSize = NULL;
+        if (p_setFArrayBlockSize == NULL) {
+            validateSignature("R_xlen_t(*setFArrayBlockSize)(R_xlen_t)");
+            p_setFArrayBlockSize = (Ptr_setFArrayBlockSize)R_GetCCallable("farray", "_farray_setFArrayBlockSize");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_setLazyBlockSize(Shield<SEXP>(Rcpp::wrap(size)));
+            rcpp_result_gen = p_setFArrayBlockSize(Shield<SEXP>(Rcpp::wrap(size)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
@@ -45,17 +45,17 @@ namespace farray {
         return Rcpp::as<R_xlen_t >(rcpp_result_gen);
     }
 
-    inline R_xlen_t getLazyBlockSize() {
-        typedef SEXP(*Ptr_getLazyBlockSize)();
-        static Ptr_getLazyBlockSize p_getLazyBlockSize = NULL;
-        if (p_getLazyBlockSize == NULL) {
-            validateSignature("R_xlen_t(*getLazyBlockSize)()");
-            p_getLazyBlockSize = (Ptr_getLazyBlockSize)R_GetCCallable("farray", "_farray_getLazyBlockSize");
+    inline R_xlen_t getFArrayBlockSize() {
+        typedef SEXP(*Ptr_getFArrayBlockSize)();
+        static Ptr_getFArrayBlockSize p_getFArrayBlockSize = NULL;
+        if (p_getFArrayBlockSize == NULL) {
+            validateSignature("R_xlen_t(*getFArrayBlockSize)()");
+            p_getFArrayBlockSize = (Ptr_getFArrayBlockSize)R_GetCCallable("farray", "_farray_getFArrayBlockSize");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_getLazyBlockSize();
+            rcpp_result_gen = p_getFArrayBlockSize();
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
@@ -66,17 +66,17 @@ namespace farray {
         return Rcpp::as<R_xlen_t >(rcpp_result_gen);
     }
 
-    inline int getLazyThread(bool max = false) {
-        typedef SEXP(*Ptr_getLazyThread)(SEXP);
-        static Ptr_getLazyThread p_getLazyThread = NULL;
-        if (p_getLazyThread == NULL) {
-            validateSignature("int(*getLazyThread)(bool)");
-            p_getLazyThread = (Ptr_getLazyThread)R_GetCCallable("farray", "_farray_getLazyThread");
+    inline int getFArrayThread(bool max = false) {
+        typedef SEXP(*Ptr_getFArrayThread)(SEXP);
+        static Ptr_getFArrayThread p_getFArrayThread = NULL;
+        if (p_getFArrayThread == NULL) {
+            validateSignature("int(*getFArrayThread)(bool)");
+            p_getFArrayThread = (Ptr_getFArrayThread)R_GetCCallable("farray", "_farray_getFArrayThread");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_getLazyThread(Shield<SEXP>(Rcpp::wrap(max)));
+            rcpp_result_gen = p_getFArrayThread(Shield<SEXP>(Rcpp::wrap(max)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
@@ -87,17 +87,17 @@ namespace farray {
         return Rcpp::as<int >(rcpp_result_gen);
     }
 
-    inline int setLazyThread(int n, SEXP reset_after_fork = R_NilValue) {
-        typedef SEXP(*Ptr_setLazyThread)(SEXP,SEXP);
-        static Ptr_setLazyThread p_setLazyThread = NULL;
-        if (p_setLazyThread == NULL) {
-            validateSignature("int(*setLazyThread)(int,SEXP)");
-            p_setLazyThread = (Ptr_setLazyThread)R_GetCCallable("farray", "_farray_setLazyThread");
+    inline int setFArrayThread(int n, SEXP reset_after_fork = R_NilValue) {
+        typedef SEXP(*Ptr_setFArrayThread)(SEXP,SEXP);
+        static Ptr_setFArrayThread p_setFArrayThread = NULL;
+        if (p_setFArrayThread == NULL) {
+            validateSignature("int(*setFArrayThread)(int,SEXP)");
+            p_setFArrayThread = (Ptr_setFArrayThread)R_GetCCallable("farray", "_farray_setFArrayThread");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_setLazyThread(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(reset_after_fork)));
+            rcpp_result_gen = p_setFArrayThread(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(reset_after_fork)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();

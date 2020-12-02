@@ -7,7 +7,7 @@
 chunk_map(x, map_fun, reduce, max_nchunks, chunk_size, ...)
 }
 \arguments{
-\item{x}{a \code{LazyArray} or R array}
+\item{x}{a \code{farray} or R array}
 
 \item{map_fun}{function to apply to each chunk}
 
@@ -42,7 +42,7 @@ make chunks along rows and apply mapping functions along rows.
 }
 \examples{
 
-x <- as.lazymatrix(matrix(1:100, ncol = 2))
+x <- as.fmatrix(matrix(1:100, ncol = 2))
 x
 
 # Set max_nchunks=Inf and chunk_size=10 to force total number of chunks

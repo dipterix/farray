@@ -2,16 +2,16 @@
 % Please edit documentation in R/aaa.R
 \name{farray-threads}
 \alias{farray-threads}
-\alias{set_lazy_threads}
-\alias{get_lazy_threads}
-\title{Set Number of Threads for Lazy Arrays}
+\alias{set_farray_threads}
+\alias{get_farray_threads}
+\title{Set Number of Threads for \code{'farray'}}
 \usage{
-set_lazy_threads(
+set_farray_threads(
   nr_of_threads = getOption("farray.nthreads"),
   reset_after_fork = NULL
 )
 
-get_lazy_threads(max = FALSE)
+get_farray_threads(max = FALSE)
 }
 \arguments{
 \item{nr_of_threads}{number of CPU cores to use, or \code{NULL} to

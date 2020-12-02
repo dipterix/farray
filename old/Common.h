@@ -8,7 +8,7 @@
 #define NA_INTEGER64 LLONG_MIN
 #endif // NA_INTEGER64
 
-// Lazyarray subset_mode - No index
+// farray subset_mode - No index
 #ifndef LASUBMOD_NOIDX
 #define LASUBMOD_NOIDX 2
 #endif

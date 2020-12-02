@@ -1,8 +1,8 @@
 test_that("multiplication works", {
   on.exit({options('farray.chunk_memory' = 80)
-    farray::set_lazy_threads(0)})
+    farray::set_farray_threads(0)})
 
-  farray::set_lazy_threads(1)
+  farray::set_farray_threads(1)
 
 
   options('farray.chunk_memory' = 0.00001)
@@ -18,62 +18,17 @@ test_that("multiplication works", {
     xy0 <- orig1 %*% (t(orig1) * weights)
   })
 
-  # x <- as.lazymatrix(orig1)
-  # y <- as.lazymatrix(t(orig1))
+
+  y <- as.fmatrix(t(orig1))
 
 
-  # # 0.130
-  # system.time({
-  #   xy <- lazy_matmul(x, y, weights =  weights, hybrid_limit = 0)
-  # })
-  # expect_equal(range(xy[] - xy0), c(0,0))
-  #
-  # y <- t(as.lazymatrix(orig1))
-  #
-  # # 0.188
-  # a <- system.time({
-  #   xy <- lazy_matmul(x, y, weights =  weights, hybrid_limit = 0)
-  # })
-  # expect_equal(range(xy[] - xy0), c(0,0))
-  #
-  # x <- t(as.lazymatrix(t(orig1)))
-  #
-  # # 0.098
-  # system.time({
-  #   xy <- lazy_matmul(x, y, weights =  weights, hybrid_limit = 0)
-  # })
-  # expect_equal(range(xy[] - xy0), c(0,0))
-
-  y <- as.lazymatrix(t(orig1))
-
-  # # 0.017
-  # system.time({
-  #   xy <- lazy_matmul(x, y, weights =  weights, hybrid_limit = 0)
-  # })
-  # expect_equal(range(xy[] - xy0), c(0,0))
-
-  x <- as.lazymatrix(t(orig1))
+  x <- as.fmatrix(t(orig1))
 
   # 0.002
   system.time({
     xy <- crossprod(x, weights = weights)
   })
   expect_equal(range(xy[] - xy0), c(0,0))
-
-  # x <- t(as.lazymatrix(orig1))
-  #
-  # # 0.162
-  # system.time({
-  #   xy <- lazy_crossprod(x, weights = weights)
-  # })
-  # expect_equal(range(xy[] - xy0), c(0,0))
-  #
-  # # bench::mark({
-  # #   lazy_matmul(x, y)
-  # # }, {
-  # #   x[] %*% y[]
-  # # }, check = F, iterations = 1)
-  # #
 })
 
 

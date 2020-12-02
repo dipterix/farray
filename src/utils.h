@@ -1,6 +1,6 @@
 
-#ifndef DIP_LAZYARRAY_UTILS_H
-#define DIP_LAZYARRAY_UTILS_H
+#ifndef DIP_FARRAY_UTILS_H
+#define DIP_FARRAY_UTILS_H
 
 #include "Rcpp.h"
 
@@ -41,4 +41,4 @@ inline std::vector<T> seq_len3(int64_t n){
 
 void setReIm(Rcpp::ComplexVector x, Rcpp::NumericVector v, bool is_real);
 
-#endif // DIP_LAZYARRAY_UTILS_H
+#endif // DIP_FARRAY_UTILS_H

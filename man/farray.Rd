@@ -3,7 +3,7 @@
 \name{farray}
 \alias{farray}
 \alias{filearray}
-\alias{as.lazymatrix}
+\alias{as.fmatrix}
 \alias{as.farray}
 \title{Create or load a \code{farray} instance}
 \usage{
@@ -23,7 +23,7 @@ filearray(
   meta_name = "farray.meta"
 )
 
-as.lazymatrix(x, ...)
+as.fmatrix(x, ...)
 
 as.farray(x, path, ...)
 }
@@ -44,9 +44,8 @@ as.farray(x, path, ...)
 \item{...}{passed into \code{farray}}
 }
 \value{
-An \code{R6} class of \code{farray}. The class name is either
-\code{FstArray} or \code{FileArray}, depending on \code{type} specified.
-Both inherit \code{AbstractLazyArray}.
+An \code{R6} class of \code{farray}. The class name is
+\code{FileArray}, inherits \code{AbstractFArray}.
 }
 \description{
 Creates or load a \code{farray} that stores data on the hard
@@ -62,18 +61,12 @@ given by the descriptive meta file. When \code{path} is missing or there is
 no valid array files inside of the directory, then a new array will be
 spawned, and \code{path} will be created automatically if it is missing.
 
-There are two back-end implementations for \code{farray()}:
-\code{"filearray"} and \code{"fstarray"}. You can use \code{type} to
-specify which implementation serves your needs. There are some differences
-between these two types. Each one has its own strengths and weaknesses.
-Please see Section "Array Types" for more details.
-
 The argument \code{meta_name} specifies the name of file which stores
 all the attribute information such as the total dimension, partition size,
 file format, and storage format etc. There could be multiple meta files for
 the same array object; see Section "Array Partitions" for details.
 }
-\section{Array Types}{
+\section{Performance}{
 
 
 Type \code{filearray} stores data in its binary form "as-is" to the local
@@ -193,7 +186,7 @@ arr[,,1]
 # ---------------- Case 4: Converting from R arrays ----------------
 
 x <- matrix(1:16, 4)
-x <- as.fmatrix(x, storage_format = "complex")
+x <- as.fmatrix(x)
 x[,]  # or x[]
 
 

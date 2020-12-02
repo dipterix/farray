@@ -1,7 +1,7 @@
 
 #' Generate partition summary statistics for array objects along the last
 #' dimension
-#' @param x an array or \code{LazyArray}
+#' @param x an array or \code{farray}
 #' @param na.rm whether to remove \code{NA} when calculating summary statistics
 #' @param ... passed to other methods or ignored
 #' @return A data frame with the following possible columns: \code{Min},
@@ -14,7 +14,7 @@
 #' x <- array(1:27, c(3,3,3))
 #' partition_table(x)
 #'
-#' # LazyArray
+#' # farray
 #' x <- farray(tempfile(), storage_format = 'double', dim = c(3,3,3))
 #' x[] <- 1:27
 #' partition_table(x, quiet=TRUE)
@@ -47,7 +47,7 @@ partition_table.array <- function(x, na.rm = FALSE, ...){
 
 #' @rdname partition_table
 #' @export
-partition_table.AbstractLazyArray <- function(x, na.rm = FALSE, ...){
+partition_table.AbstractFArray <- function(x, na.rm = FALSE, ...){
   smry <- summary(x, na.rm = FALSE, ...)
   re <- smry$partitions
   re$Count <- re$Length - re$NAs
@@ -57,7 +57,7 @@ partition_table.AbstractLazyArray <- function(x, na.rm = FALSE, ...){
 
 #' Apply function along the last dimension of an array and aggregate the results
 #' @name partition_map
-#' @param x R array or \code{LazyArray}
+#' @param x R array or \code{farray}
 #' @param map_fun function that takes in a slice of array and an optional
 #' argument indicating current partition number
 #' @param reduce function that accept a list of results returned by
@@ -102,9 +102,9 @@ partition_table.AbstractLazyArray <- function(x, na.rm = FALSE, ...){
 #'   sum(slice)
 #' }, partitions = c(1,2,4,5))
 #'
-#' # -------------------------- LazyArray ---------------------------
-#' x <- farray(tempfile(), storage_format = 'complex', dim = c(2,3,4))
-#' x[] <- 1:24 + (24:1) * 1i
+#' # -------------------------- farray ---------------------------
+#' x <- farray(tempfile(), storage_format = 'integer', dim = c(2,3,4))
+#' x[] <- 1:24
 #'
 #' partition_map(x, function(slice, part){
 #'   slice[1, ,] * slice[2, ,]
@@ -153,7 +153,7 @@ partition_map.array <- function(x, map_fun, reduce, partitions, ...){
 }
 
 #' @export
-partition_map.AbstractLazyArray <- function(x, map_fun, reduce, partitions, further_split = FALSE, ...){
+partition_map.AbstractFArray <- function(x, map_fun, reduce, partitions, further_split = FALSE, ...){
   if(missing(partitions)){
     partitions <- seq_len(x$npart)
   } else {
@@ -183,7 +183,7 @@ partition_map.AbstractLazyArray <- function(x, map_fun, reduce, partitions, furt
 
 #' Apply functions to all partitions, but small chunks each time
 #' @seealso \code{\link{partition_map}}
-#' @param x a \code{LazyArray} or R array
+#' @param x a \code{farray} or R array
 #' @param map_fun function to apply to each chunk
 #' @param reduce similar to \code{reduce} in \code{\link{partition_map}}
 #' @param max_nchunks maximum number of chunks. If number of chunks is too
@@ -205,7 +205,7 @@ partition_map.AbstractLazyArray <- function(x, map_fun, reduce, partitions, furt
 #' make chunks along rows and apply mapping functions along rows.
 #' @examples
 #'
-#' x <- as.lazymatrix(matrix(1:100, ncol = 2))
+#' x <- as.fmatrix(matrix(1:100, ncol = 2))
 #' x
 #'
 #' # Set max_nchunks=Inf and chunk_size=10 to force total number of chunks
@@ -229,13 +229,13 @@ chunk_map <- function(x, map_fun, reduce, max_nchunks, chunk_size, ...){
 
 
 #' @export
-chunk_map.AbstractLazyArray <- function(x, map_fun, reduce, max_nchunks, chunk_size, partitions = 'all', ...){
+chunk_map.AbstractFArray <- function(x, map_fun, reduce, max_nchunks, chunk_size, partitions = 'all', ...){
 
   if(missing(max_nchunks)){
     # calculate such that each chunk size is at most 0.5GB
     max_nchunks <- auto_chunks(x)
   }
-  new_x <- as.lazymatrix(x)
+  new_x <- as.fmatrix(x)
   new_x$make_readonly()
 
   if(missing(chunk_size)){

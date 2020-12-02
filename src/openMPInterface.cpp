@@ -7,7 +7,7 @@
 #endif
 
 
-int getLazyThread(bool max){
+int getFArrayThread(bool max){
 #ifdef _OPENMP
   if(detectFork){
     return 1;
@@ -15,17 +15,17 @@ int getLazyThread(bool max){
   if( max ){
     return omp_get_max_threads();
   }
-  int t = lazyThreads < 0 ? omp_get_max_threads() : std::min(lazyThreads, omp_get_max_threads());
+  int t = farrayThreads < 0 ? omp_get_max_threads() : std::min(farrayThreads, omp_get_max_threads());
   return std::max(t, 1);
 #else
   return 1;
 #endif
 }
 
-int setLazyThread(int n, SEXP reset_after_fork){
+int setFArrayThread(int n, SEXP reset_after_fork){
 #ifdef _OPENMP
   if(!detectFork){
-    lazyThreads = n;
+    farrayThreads = n;
   }
   if( reset_after_fork != R_NilValue ){
     if( Rf_asLogical(reset_after_fork) ){
@@ -43,7 +43,7 @@ int setLazyThread(int n, SEXP reset_after_fork){
 
 
 bool hasOpenMP(){
-  return LAZYARRAY_HAS_OPENMP;
+  return FARRAY_HAS_OPENMP;
 }
 
 void onForked(){
@@ -51,7 +51,7 @@ void onForked(){
 }
 void onLeaveFork(){
   if(!reset_forked){
-    lazyThreads = 1;
+    farrayThreads = 1;
   }
   detectFork = false;
 }

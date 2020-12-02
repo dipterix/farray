@@ -8,7 +8,7 @@ test_that("Subset farray", {
   # expect_equal(x[idx], a[idx])
 
   # matrix
-  x <- as.lazymatrix(a)
+  x <- as.fmatrix(a)
   b <- x[]
 
   expect_equal(as.integer(dim(b)), c(16,5))

@@ -59,21 +59,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// setLazyBlockSize
-R_xlen_t setLazyBlockSize(R_xlen_t size);
-static SEXP _farray_setLazyBlockSize_try(SEXP sizeSEXP) {
+// setFArrayBlockSize
+R_xlen_t setFArrayBlockSize(R_xlen_t size);
+static SEXP _farray_setFArrayBlockSize_try(SEXP sizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< R_xlen_t >::type size(sizeSEXP);
-    rcpp_result_gen = Rcpp::wrap(setLazyBlockSize(size));
+    rcpp_result_gen = Rcpp::wrap(setFArrayBlockSize(size));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _farray_setLazyBlockSize(SEXP sizeSEXP) {
+RcppExport SEXP _farray_setFArrayBlockSize(SEXP sizeSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_farray_setLazyBlockSize_try(sizeSEXP));
+        rcpp_result_gen = PROTECT(_farray_setFArrayBlockSize_try(sizeSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -93,20 +93,20 @@ RcppExport SEXP _farray_setLazyBlockSize(SEXP sizeSEXP) {
     UNPROTECT(1);
     return rcpp_result_gen;
 }
-// getLazyBlockSize
-R_xlen_t getLazyBlockSize();
-static SEXP _farray_getLazyBlockSize_try() {
+// getFArrayBlockSize
+R_xlen_t getFArrayBlockSize();
+static SEXP _farray_getFArrayBlockSize_try() {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    rcpp_result_gen = Rcpp::wrap(getLazyBlockSize());
+    rcpp_result_gen = Rcpp::wrap(getFArrayBlockSize());
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _farray_getLazyBlockSize() {
+RcppExport SEXP _farray_getFArrayBlockSize() {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_farray_getLazyBlockSize_try());
+        rcpp_result_gen = PROTECT(_farray_getFArrayBlockSize_try());
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -142,21 +142,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// getLazyThread
-int getLazyThread(bool max);
-static SEXP _farray_getLazyThread_try(SEXP maxSEXP) {
+// getFArrayThread
+int getFArrayThread(bool max);
+static SEXP _farray_getFArrayThread_try(SEXP maxSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< bool >::type max(maxSEXP);
-    rcpp_result_gen = Rcpp::wrap(getLazyThread(max));
+    rcpp_result_gen = Rcpp::wrap(getFArrayThread(max));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _farray_getLazyThread(SEXP maxSEXP) {
+RcppExport SEXP _farray_getFArrayThread(SEXP maxSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_farray_getLazyThread_try(maxSEXP));
+        rcpp_result_gen = PROTECT(_farray_getFArrayThread_try(maxSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -176,22 +176,22 @@ RcppExport SEXP _farray_getLazyThread(SEXP maxSEXP) {
     UNPROTECT(1);
     return rcpp_result_gen;
 }
-// setLazyThread
-int setLazyThread(int n, SEXP reset_after_fork);
-static SEXP _farray_setLazyThread_try(SEXP nSEXP, SEXP reset_after_forkSEXP) {
+// setFArrayThread
+int setFArrayThread(int n, SEXP reset_after_fork);
+static SEXP _farray_setFArrayThread_try(SEXP nSEXP, SEXP reset_after_forkSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     Rcpp::traits::input_parameter< SEXP >::type reset_after_fork(reset_after_forkSEXP);
-    rcpp_result_gen = Rcpp::wrap(setLazyThread(n, reset_after_fork));
+    rcpp_result_gen = Rcpp::wrap(setFArrayThread(n, reset_after_fork));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _farray_setLazyThread(SEXP nSEXP, SEXP reset_after_forkSEXP) {
+RcppExport SEXP _farray_setFArrayThread(SEXP nSEXP, SEXP reset_after_forkSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_farray_setLazyThread_try(nSEXP, reset_after_forkSEXP));
+        rcpp_result_gen = PROTECT(_farray_setFArrayThread_try(nSEXP, reset_after_forkSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -491,10 +491,10 @@ RcppExport SEXP _farray_tok(SEXP msgSEXP, SEXP stopSEXP) {
 static int _farray_RcppExport_validate(const char* sig) { 
     static std::set<std::string> signatures;
     if (signatures.empty()) {
-        signatures.insert("R_xlen_t(*setLazyBlockSize)(R_xlen_t)");
-        signatures.insert("R_xlen_t(*getLazyBlockSize)()");
-        signatures.insert("int(*getLazyThread)(bool)");
-        signatures.insert("int(*setLazyThread)(int,SEXP)");
+        signatures.insert("R_xlen_t(*setFArrayBlockSize)(R_xlen_t)");
+        signatures.insert("R_xlen_t(*getFArrayBlockSize)()");
+        signatures.insert("int(*getFArrayThread)(bool)");
+        signatures.insert("int(*setFArrayThread)(int,SEXP)");
         signatures.insert("bool(*hasOpenMP)()");
         signatures.insert("SEXP(*dropDimension)(SEXP)");
         signatures.insert("int64_t(*prod2)(SEXP,bool)");
@@ -509,10 +509,10 @@ static int _farray_RcppExport_validate(const char* sig) {
 
 // registerCCallable (register entry points for exported C++ functions)
 RcppExport SEXP _farray_RcppExport_registerCCallable() { 
-    R_RegisterCCallable("farray", "_farray_setLazyBlockSize", (DL_FUNC)_farray_setLazyBlockSize_try);
-    R_RegisterCCallable("farray", "_farray_getLazyBlockSize", (DL_FUNC)_farray_getLazyBlockSize_try);
-    R_RegisterCCallable("farray", "_farray_getLazyThread", (DL_FUNC)_farray_getLazyThread_try);
-    R_RegisterCCallable("farray", "_farray_setLazyThread", (DL_FUNC)_farray_setLazyThread_try);
+    R_RegisterCCallable("farray", "_farray_setFArrayBlockSize", (DL_FUNC)_farray_setFArrayBlockSize_try);
+    R_RegisterCCallable("farray", "_farray_getFArrayBlockSize", (DL_FUNC)_farray_getFArrayBlockSize_try);
+    R_RegisterCCallable("farray", "_farray_getFArrayThread", (DL_FUNC)_farray_getFArrayThread_try);
+    R_RegisterCCallable("farray", "_farray_setFArrayThread", (DL_FUNC)_farray_setFArrayThread_try);
     R_RegisterCCallable("farray", "_farray_hasOpenMP", (DL_FUNC)_farray_hasOpenMP_try);
     R_RegisterCCallable("farray", "_farray_dropDimension", (DL_FUNC)_farray_dropDimension_try);
     R_RegisterCCallable("farray", "_farray_prod2", (DL_FUNC)_farray_prod2_try);
@@ -530,11 +530,11 @@ static const R_CallMethodDef CallEntries[] = {
     {"_farray_parseSlices", (DL_FUNC) &_farray_parseSlices, 3},
     {"_farray_parseAndScheduleBlocks2", (DL_FUNC) &_farray_parseAndScheduleBlocks2, 3},
     {"_farray_reshapeOrDrop", (DL_FUNC) &_farray_reshapeOrDrop, 3},
-    {"_farray_setLazyBlockSize", (DL_FUNC) &_farray_setLazyBlockSize, 1},
-    {"_farray_getLazyBlockSize", (DL_FUNC) &_farray_getLazyBlockSize, 0},
+    {"_farray_setFArrayBlockSize", (DL_FUNC) &_farray_setFArrayBlockSize, 1},
+    {"_farray_getFArrayBlockSize", (DL_FUNC) &_farray_getFArrayBlockSize, 0},
     {"_farray_subsetFM", (DL_FUNC) &_farray_subsetFM, 6},
-    {"_farray_getLazyThread", (DL_FUNC) &_farray_getLazyThread, 1},
-    {"_farray_setLazyThread", (DL_FUNC) &_farray_setLazyThread, 2},
+    {"_farray_getFArrayThread", (DL_FUNC) &_farray_getFArrayThread, 1},
+    {"_farray_setFArrayThread", (DL_FUNC) &_farray_setFArrayThread, 2},
     {"_farray_hasOpenMP", (DL_FUNC) &_farray_hasOpenMP, 0},
     {"_farray_dropDimension", (DL_FUNC) &_farray_dropDimension, 1},
     {"_farray_prod2", (DL_FUNC) &_farray_prod2, 2},

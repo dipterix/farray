@@ -9,7 +9,7 @@ test_that("subset scheduler-normal case, NA & 0 cases", {
     slice_copy <- lapply(slice, I); force(slice_copy)
     res <- parseAndScheduleBlocks2(slice_copy, dim)
     re <- res$schedule
-    block_lb <- getLazyBlockSize()
+    block_lb <- getFArrayBlockSize()
     block_ub <- 31250000
     ndims <- length(dim)
 
@@ -92,13 +92,13 @@ test_that("subset scheduler-normal case, NA & 0 cases", {
   dim <- c(5,7,8,10)
   slice <- list(c(1,1,2),1,2:3,4:5)
 
-  setLazyBlockSize(1)
+  setFArrayBlockSize(1)
   check_schedule(slice, dim)
-  setLazyBlockSize(30)
+  setFArrayBlockSize(30)
   check_schedule(slice, dim)
-  setLazyBlockSize(300)
+  setFArrayBlockSize(300)
   check_schedule(slice, dim)
-  setLazyBlockSize(10000)
+  setFArrayBlockSize(10000)
   check_schedule(slice, dim)
 
   dim <- c(5,7,8,10)
@@ -110,13 +110,13 @@ test_that("subset scheduler-normal case, NA & 0 cases", {
     x
   })
 
-  setLazyBlockSize(1)
+  setFArrayBlockSize(1)
   check_schedule(slice, dim)
-  setLazyBlockSize(30)
+  setFArrayBlockSize(30)
   check_schedule(slice, dim)
-  setLazyBlockSize(300)
+  setFArrayBlockSize(300)
   check_schedule(slice, dim)
-  setLazyBlockSize(10000)
+  setFArrayBlockSize(10000)
   check_schedule(slice, dim)
 })
 

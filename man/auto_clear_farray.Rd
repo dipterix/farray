@@ -32,21 +32,21 @@ arr_dbl <- farray(path, storage_format = 'double',
 arr_dbl[] <- 1:24
 auto_clear_farray(arr_dbl)
 
-arr_chr <- farray(path, storage_format = 'character',
-                     dim = 2:4, meta_name = 'meta-chr.meta')
-auto_clear_farray(arr_chr)
+arr_dbl2 <- farray(path, storage_format = 'double',
+                     dim = 2:4, meta_name = 'meta-2.meta')
+auto_clear_farray(arr_dbl2)
 
 # remove either one, the directory still exists
 rm(arr_dbl); invisible(gc(verbose = FALSE))
 
-arr_chr[1,1,1]
+arr_dbl2[1,1,1]
 
 # Remove the other one, and path will be removed
-rm(arr_chr); invisible(gc(verbose = FALSE))
+rm(arr_dbl2); invisible(gc(verbose = FALSE))
 
 dir.exists(path)
-arr_check <- farray(path, storage_format = 'character',
-                       dim = 2:4, meta_name = 'meta-chr')
+arr_check <- farray(path, storage_format = 'double',
+                       dim = 2:4, meta_name = 'meta-2.meta')
 
 # data is removed, so there should be no data (NAs)
 arr_check[]

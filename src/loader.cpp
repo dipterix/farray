@@ -88,7 +88,7 @@ bool fileExists(const std::string& con){
 template <SEXPTYPE RTYPE, typename T>
 SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& dim,
                       const ParsedIndex* subparsed){
-  int nThread = getLazyThread();
+  int nThread = getFArrayThread();
   if(nThread <= 1){ nThread = 1; }
 
   int subset_mode = subparsed->subset_mode;
@@ -654,9 +654,9 @@ SEXP subsetFM(const std::string& rootPath, SEXP listOrEnv, const std::vector<int
 # devtools::load_all(); f <- normalizePath('~/Desktop/filearray_data/'); subsetFM(f, list(1,1,1,1), c(287,200,601,1), 14L, NULL, TRUE)
 
 devtools::load_all();
-filearray <- filearray('~/Desktop/filearray_data/', dim = dim(lazy))
+filearray <- filearray('~/Desktop/filearray_data/', dim = dim(flazy))
 sa <- sample(200)
-range(filearray[sa,sa,sa,53] - lazy[sa,sa,sa,53])
+range(filearray[sa,sa,sa,53] - flazy[sa,sa,sa,53])
 
 
 f <- normalizePath('~/Desktop/filearray_data/');

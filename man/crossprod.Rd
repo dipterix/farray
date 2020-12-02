@@ -2,19 +2,19 @@
 % Please edit documentation in R/zzz.R
 \name{crossprod}
 \alias{crossprod}
-\alias{crossprod,AbstractLazyArray,AbstractLazyArray-method}
-\alias{crossprod,AbstractLazyArray,NULL-method}
-\alias{crossprod,AbstractLazyArray,missing-method}
-\alias{crossprod,AbstractLazyArray,matrix-method}
+\alias{crossprod,AbstractFArray,AbstractFArray-method}
+\alias{crossprod,AbstractFArray,NULL-method}
+\alias{crossprod,AbstractFArray,missing-method}
+\alias{crossprod,AbstractFArray,matrix-method}
 \title{Matrix Crossproduct}
 \usage{
-\S4method{crossprod}{AbstractLazyArray,AbstractLazyArray}(x, y = NULL, weights = NULL, ...)
+\S4method{crossprod}{AbstractFArray,AbstractFArray}(x, y = NULL, weights = NULL, ...)
 
-\S4method{crossprod}{AbstractLazyArray,`NULL`}(x, y = NULL, weights = NULL, ...)
+\S4method{crossprod}{AbstractFArray,`NULL`}(x, y = NULL, weights = NULL, ...)
 
-\S4method{crossprod}{AbstractLazyArray,missing}(x, y = NULL, weights = NULL, ...)
+\S4method{crossprod}{AbstractFArray,missing}(x, y = NULL, weights = NULL, ...)
 
-\S4method{crossprod}{AbstractLazyArray,matrix}(x, y = NULL, weights = NULL, ...)
+\S4method{crossprod}{AbstractFArray,matrix}(x, y = NULL, weights = NULL, ...)
 }
 \arguments{
 \item{x}{a \code{LazyArray} or an R matrix}
@@ -37,18 +37,18 @@ Matrix Crossproduct
 x <- matrix(1:100, 50)
 crossprod(x)
 
-lazy_x <- as.lazymatrix(x)
-crossprod(lazy_x)[]
+fmat_x <- as.fmatrix(x)
+crossprod(fmat_x)[]
 
 weights <- (1:50)/50
 
 t(x) \%*\% diag(weights) \%*\% x
-crossprod(lazy_x, weights = weights)
+crossprod(fmat_x, weights = weights)
 
 \dontrun{
 
 # large data set ~ 1.6GB
-x <- as.lazymatrix(matrix(rnorm(2e8), ncol = 2))
+x <- as.fmatrix(matrix(rnorm(2e8), ncol = 2))
 
 crossprod(x)
 }

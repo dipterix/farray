@@ -3,7 +3,7 @@
 \name{partition_table}
 \alias{partition_table}
 \alias{partition_table.array}
-\alias{partition_table.AbstractLazyArray}
+\alias{partition_table.AbstractFArray}
 \title{Generate partition summary statistics for array objects along the last
 dimension}
 \usage{
@@ -11,10 +11,10 @@ partition_table(x, na.rm = FALSE, ...)
 
 \method{partition_table}{array}(x, na.rm = FALSE, ...)
 
-\method{partition_table}{AbstractLazyArray}(x, na.rm = FALSE, ...)
+\method{partition_table}{AbstractFArray}(x, na.rm = FALSE, ...)
 }
 \arguments{
-\item{x}{an array or \code{LazyArray}}
+\item{x}{an array or \code{farray}}
 
 \item{na.rm}{whether to remove \code{NA} when calculating summary statistics}
 
@@ -35,7 +35,7 @@ dimension
 x <- array(1:27, c(3,3,3))
 partition_table(x)
 
-# LazyArray
+# farray
 x <- farray(tempfile(), storage_format = 'double', dim = c(3,3,3))
 x[] <- 1:27
 partition_table(x, quiet=TRUE)

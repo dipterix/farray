@@ -7,7 +7,7 @@
 partition_map(x, map_fun, reduce, partitions, ...)
 }
 \arguments{
-\item{x}{R array or \code{LazyArray}}
+\item{x}{R array or \code{farray}}
 
 \item{map_fun}{function that takes in a slice of array and an optional
 argument indicating current partition number}
@@ -62,9 +62,9 @@ partition_map(x, function(slice, part){
   sum(slice)
 }, partitions = c(1,2,4,5))
 
-# -------------------------- LazyArray ---------------------------
-x <- farray(tempfile(), storage_format = 'complex', dim = c(2,3,4))
-x[] <- 1:24 + (24:1) * 1i
+# -------------------------- farray ---------------------------
+x <- farray(tempfile(), storage_format = 'integer', dim = c(2,3,4))
+x[] <- 1:24
 
 partition_map(x, function(slice, part){
   slice[1, ,] * slice[2, ,]
