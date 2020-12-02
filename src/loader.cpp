@@ -141,42 +141,60 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
     // int64_t nblocks = expect_nrows / BLOCKSIZE;
     // nblocks = (nblocks * BLOCKSIZE) > expect_nrows? nblocks - 1: nblocks;
 
-    ptr_res = res.begin();
+    // last time to exit before omp loop
+    R_CheckUserInterrupt();
 
+#pragma omp parallel num_threads(nThread) private(chunk_end, chunk_start, reader_start, reader_end)
+{
+  // schedule private variables
+  auto ptr_res_private = res.begin();
+  auto ptr_alt_private = res.begin();
+  std::string partition_path_private;
+  bool bugged = false;
+  FILE* input = NULL;
+
+#pragma omp for schedule(static, 1) nowait
+{
     for(int64_t file_ii = 1; file_ii <= nfiles; file_ii++ ){
-      partition_path = rootPath + std::to_string(file_ii) + ".bmat";
 
-      R_CheckUserInterrupt();
+      partition_path_private = rootPath + std::to_string(file_ii) + ".bmat";
+      // R_CheckUserInterrupt();
+      ptr_res_private = res.begin() + (block_size) * (file_ii - 1);
+      // try to directly open the file
+      input = NULL;
+      bugged = false;
 
+      // It's possible the file cannot be opened
+      try{ input = fopen( partition_path_private.c_str(), "rb" ); } catch(...) {}
 
-      if( !fileExists(partition_path) || fileLength(partition_path) != (expect_nrows * element_size) ){
-        // this file is invalid, fill with na
-        ptr_alt = ptr_res + block_size;
-        while( ptr_alt != ptr_res ){
-          *ptr_res++ = na_value;
+      if(input) {
+        try {
+          if(fileLength(partition_path_private) == (expect_nrows * element_size)) {
+            cpp_readBin(input, (char*)(ptr_res_private), expect_nrows, element_size, 0, false);
+          } else {
+            bugged = true;
+          }
+        } catch (...) {
+          // cannot open the partition
+          bugged = true;
         }
-
+        try{ fclose(input); } catch(...) {}
       } else {
-        // std::ifstream input( partition_path, std::ios::binary );
-        FILE* input = fopen( partition_path.c_str(), "rb" );
-        try{
-          cpp_readBin(input, (char*)(ptr_res), expect_nrows, element_size, 0, false);
-        } catch(...){
-          warning("Error while reading partition file(s)");
-        }
-        if(input != NULL){
-          fclose(input);
-        }
+        // file missing, fill with NA
+        bugged = true;
+      }
 
-        ptr_res += block_size;
-        // ptr_buffer = buffer.begin();
-        // ptr_alt = ptr_res + block_size;
-        // while(ptr_res != ptr_alt){
-        //   *ptr_res++ = *ptr_buffer++;
-        // }
+      if( bugged ){
+        // this file is invalid, fill with na
+        ptr_alt_private = ptr_res_private + block_size;
+        while( ptr_alt_private != ptr_res_private ){
+          *ptr_res_private++ = na_value;
+        }
       }
 
     }
+} // end omp for
+} // end omp
 
     res.attr("dim") = Shield<SEXP>(wrap(target_dimension));
 
