@@ -195,8 +195,11 @@ test_that("Loader2", {
 
   #### sub-blocks With NAs
   unlink(a$get_partition_fpath(2))
-  setFArrayBlockSize(1)
   x[,,2] <- NA
+  expect_equal(x[,,], a[])
+  expect_equal(x[], a[])
+  setFArrayBlockSize(1)
+  expect_equal(x[,,], a[])
   expect_equal(x[], a[])
   # farray_test_unit(0.1, x)
   farray_test_unit(1L, x)
@@ -204,6 +207,7 @@ test_that("Loader2", {
 
   setFArrayBlockSize(-1)
   x[,,2] <- NA
+  expect_equal(x[,,], a[])
   expect_equal(x[], a[])
   # farray_test_unit(0.1, x)
   farray_test_unit(1L, x)
