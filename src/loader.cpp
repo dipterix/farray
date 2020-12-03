@@ -23,37 +23,56 @@ int64_t cpp_readBin(FILE* conn, char* buffer, int64_t n,
                     int size, int64_t skip = 0, bool check_length = true){
   // char* buffer = new char[n * size];
   // std::ifstream input( con, std::ios::binary );
-  int64_t fsize = 0;
+  int64_t fsize = 1;
   int64_t n_byte = n * size;
+  int64_t skip_byte = skip * size;
+  char* ptr = buffer;
   try{
     // input.setf(std::ios::ios_base::skipws);
     // std::filebuf* pbuf = input.rdbuf();
     if(check_length){
       // fsize = pbuf->pubseekoff (-skip * size, input.end, input.beg);
       fseek(conn, 0, SEEK_END);
-      fsize = ::ftell(conn);
+      fsize = ftell(conn) - skip_byte;
       if(fsize < size){
         n_byte = 0;
       } else {
-        if(fsize < n_byte){
-          n_byte = fsize;
-        }
+        if(fsize < n_byte){ n_byte = fsize; }
         // pbuf->pubseekpos (skip * size, input.beg);
         // pbuf->sgetn (buffer, n_byte);
-        fseek(conn, skip * size, SEEK_SET);
-        // fsize not used to suppress warnings
-        fsize = std::fread(buffer, 1, n_byte, conn);
+        fseek(conn, skip_byte, SEEK_SET);
+
+        while(n_byte >= FARRAY_BUFFERSIZE && fsize > 0){
+          // fsize not used to suppress warnings
+          fsize = std::fread(ptr, 1, FARRAY_BUFFERSIZE, conn);
+          n_byte -= FARRAY_BUFFERSIZE;
+          ptr += FARRAY_BUFFERSIZE;
+        }
+        if(n_byte > 0){
+          fsize = std::fread(ptr, 1, n_byte, conn);
+        }
       }
     } else {
       // pbuf->pubseekpos (skip * size, input.beg);
       // pbuf->sgetn (buffer, n_byte);
-      fseek(conn, skip * size, SEEK_SET);
-      // fsize not used to suppress warnings
-      fsize = std::fread(buffer, 1, n_byte, conn);
+      fseek(conn, skip_byte, SEEK_SET);
+      // // fsize not used to suppress warnings
+      // fsize = std::fread(buffer, 1, n_byte, conn);
+
+      while(n_byte >= FARRAY_BUFFERSIZE && fsize > 0){
+        // fsize not used to suppress warnings
+        fsize = std::fread(ptr, 1, FARRAY_BUFFERSIZE, conn);
+        n_byte -= FARRAY_BUFFERSIZE;
+        ptr += FARRAY_BUFFERSIZE;
+      }
+      if(n_byte > 0){
+        fsize = std::fread(ptr, 1, n_byte, conn);
+      }
     }
   } catch (...) {
     n_byte = 0;
   }
+  ptr = NULL;
   // input.close();
   return n_byte;
 }
@@ -68,7 +87,7 @@ int64_t fileLength(const std::string& con){
     // std::filebuf* pbuf = input.rdbuf();
     // fsize = pbuf->pubseekoff (0,input.end,input.beg);
     fseek(conn, 0, SEEK_END);
-    fsize = ::ftell(conn);
+    fsize = ftell(conn);
   } catch(...){}
   // input.close();
   if( conn != NULL ){
@@ -379,29 +398,30 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
     bool block_indexed = schedule->block_indexed;                   // whether block_schedule can be trusted
     std::vector<std::pair<std::vector<int64_t>, bool>> block_location = schedule->block_location;           // subset of locational indices of blocks
 
-    // // block_location will be used, make int64_t version
-    // std::vector<std::vector<int64_t>> block_location_alt(block_location.size());
-    // if(!block_indexed){
-    //   for(int64_t ii = 0; ii < block_location.size(); ii++ ){
-    //     if(block_location[ii] != R_MissingArg){
-    //       block_location_alt[ii] = as<std::vector<int64_t>>(block_location[ii]);
-    //     } else {
-    //       block_location_alt[ii] = std::vector<int64_t>(0);
-    //     }
-    //   }
-    //
-    // }
+    // DEBUG, TODO: remove
+    // block_indexed = false;
 
 
 
     // create buffers
     int64_t total_schedules = schedule_index.size();
-    // nThread = nThread < total_schedules ? nThread : total_schedules;
-    // std::vector<SEXP> buffers(nThread);
-    int64_t buffer_xlen = block_schedule_end - block_schedule_start + 1;
-    // for(int ii = 0; ii < buffers.size(); ii++){
-    //   buffers[ii] = PROTECT(Rf_allocVector(RAWSXP, buffer_xlen * element_size));
-    // }
+    int omp_chunk = (int) partition_index.size();
+    if(total_schedules - omp_chunk < 0 ){
+      omp_chunk = (int) total_schedules;
+    }
+    if(omp_chunk < 1){
+      omp_chunk = 1;
+    }
+
+    int64_t buffer_xlen;
+    if(block_indexed) {
+      buffer_xlen = block_schedule_end - block_schedule_start + 1;
+      if(buffer_xlen > BLOCKBUFFER){
+        buffer_xlen = BLOCKBUFFER;
+      }
+    } else {
+      buffer_xlen = BLOCKBUFFER;
+    }
 
 #pragma omp parallel num_threads(nThread) private(chunk_end, chunk_start, reader_start, reader_end)
 {
@@ -412,21 +432,16 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
   std::string partition_path_private;
   bool bugged = false;
   FILE* input;
+  int64_t file_len;
   int64_t lidx;
   T buffer[buffer_xlen];
   T* ptr_buffer = buffer;
   int64_t block_number;
   std::vector<int64_t>::iterator ptr_block_schedule;
+  int64_t buffer_pos;
 
   // for non-indexed array
   int64_t mod, rest, sub_index, subblock_dim_ii, tmp;
-  int64_t omp_chunk = partition_index.size();
-  if(omp_chunk > total_schedules){
-    omp_chunk = total_schedules;
-  }
-  if(omp_chunk < 1){
-    omp_chunk = 1;
-  }
 
 #pragma omp for collapse(2) schedule(dynamic, omp_chunk) nowait
 {
@@ -457,7 +472,8 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
 
         if(input) {
           try {
-            if(fileLength(partition_path_private) == (expect_nrows * element_size)) {
+            file_len = fileLength(partition_path_private);
+            if(file_len == (expect_nrows * element_size)) {
               // This is a valid connection, read data here!!!!!!!!
 
               // read elements as this will put the file to warm start
@@ -488,8 +504,16 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
                 reader_end = (chunk_start + block_schedule_end);
 
                 //#pragma omp critical // ?
-                cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1, false);
                 if( block_indexed ){
+
+                  // load buffer
+                  if(file_len < (reader_start-1 + buffer_xlen) * element_size){
+                    cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1, true);
+                  } else {
+                    cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1, false);
+                  }
+                  buffer_pos = 0;
+
                   // don't calculate index on the fly.
                   for(ptr_block_schedule = block_schedule.begin(); ptr_block_schedule != block_schedule.end(); ptr_block_schedule++)
                   {
@@ -497,10 +521,28 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
                        *ptr_block_schedule == NA_INTEGER64){
                        *ptr_res_private++ = na_value;
                     } else {
-                      *ptr_res_private++ = *(buffer + (*ptr_block_schedule - block_schedule_start));
+                      sub_index = *ptr_block_schedule - block_schedule_start - buffer_pos;
+                      if(sub_index < 0 || sub_index >= buffer_xlen){
+                        // need to load new data
+                        buffer_pos += sub_index;
+                        if(file_len < (reader_start-1 + buffer_xlen + buffer_pos) * element_size){
+                          cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, true);
+                        } else {
+                          cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, false);
+                        }
+                      }
+                      *ptr_res_private++ = *(buffer + sub_index);
                     }
                   }
                 } else {
+                  // load buffer
+                  if(file_len < (reader_start-1 + buffer_xlen) * element_size){
+                    cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1, true);
+                  } else {
+                    cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1, false);
+                  }
+                  buffer_pos = 0;
+
                   // non-indexed (usually memory too big for index), index on the fly
 
                   for(int64_t ii = 0; ii < block_expected_length; ii++ ){
@@ -555,7 +597,18 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
                     if( sub_index == NA_INTEGER64 ) {
                       *ptr_res_private++ = na_value;
                     } else {
-                      sub_index = sub_index + 1 - block_schedule_start;
+                      sub_index = sub_index + 1 - block_schedule_start - buffer_pos;
+
+                      if(sub_index < 0 || sub_index >= buffer_xlen){
+                        // need to load new data
+                        buffer_pos += sub_index;
+                        if(file_len < (reader_start-1 + buffer_xlen + buffer_pos) * element_size){
+                          cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, true);
+                        } else {
+                          cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, false);
+                        }
+                      }
+
                       *ptr_res_private++ = *(buffer + sub_index);
                     }
                     // Rcout << *(ptr_res + ii) << "\n";

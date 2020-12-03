@@ -25,6 +25,19 @@ using namespace Rcpp;
 #define LASUBMOD_MULTI 0
 #endif
 
+#ifdef FARRAY_BUFFERSIZE
+#undef FARRAY_BUFFERSIZE
+#endif
+
+#define FARRAY_BUFFERSIZE 65536
+
+#ifdef FARRAY_BUFFERSIZE_LIMIT
+#undef FARRAY_BUFFERSIZE_LIMIT
+#endif
+
+#define FARRAY_BUFFERSIZE_LIMIT 180224
+
+
 #ifdef FARRAY_DEBUG
 #undef FARRAY_DEBUG
 #endif
@@ -50,21 +63,33 @@ using namespace Rcpp;
  *
  */
 
+/**
+ * For optimal block size:
+ * https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-2000-server/cc938632(v=technet.10)?redirectedfrom=MSDN
+ *
+ * for windows,
+ * reading buffer should be at least 8 KB, 64 KB is best (CPU cache?)
+ *
+ * For R element, integer (4B), double (8B), so the minimum should be 2048 elements?
+ * -
+ *
+ */
 // Used to partition to sub-blocks
-static R_xlen_t BLOCKSIZE = 16384;
+static R_xlen_t BLOCKSIZE = 2048;
 // If sub-block size is too large, don't calculate indices (memory inefficient)
 // ~ 250 MB index set
-static R_xlen_t BLOCKLARGE = 31250000;
+static R_xlen_t BLOCKLARGE = 4194304; // 2048^2, 33.6 MB per core, total memory overhead is 268 MB for double float * 8 cores
+static R_xlen_t BLOCKBUFFER = FARRAY_BUFFERSIZE; // OMP buffer size
 
 const static int64_t INTEGER64_ONE = 1;
 const static R_xlen_t INTEGER_XLEN_ONE = 1;
 
 // [[Rcpp::interfaces(r, cpp)]]
 // [[Rcpp::export]]
-R_xlen_t setFArrayBlockSize(R_xlen_t size);
+R_xlen_t setFArrayBlockSize(R_xlen_t size, R_xlen_t limit = 0, R_xlen_t buf_size = 0);
 
 // [[Rcpp::export]]
-R_xlen_t getFArrayBlockSize();
+R_xlen_t getFArrayBlockSize(int which = 0);
 
 
 #endif // DIP_FARRAY_COMMON_H

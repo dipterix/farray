@@ -24,17 +24,17 @@ namespace farray {
         }
     }
 
-    inline R_xlen_t setFArrayBlockSize(R_xlen_t size) {
-        typedef SEXP(*Ptr_setFArrayBlockSize)(SEXP);
+    inline R_xlen_t setFArrayBlockSize(R_xlen_t size, R_xlen_t limit = 0, R_xlen_t buf_size = 0) {
+        typedef SEXP(*Ptr_setFArrayBlockSize)(SEXP,SEXP,SEXP);
         static Ptr_setFArrayBlockSize p_setFArrayBlockSize = NULL;
         if (p_setFArrayBlockSize == NULL) {
-            validateSignature("R_xlen_t(*setFArrayBlockSize)(R_xlen_t)");
+            validateSignature("R_xlen_t(*setFArrayBlockSize)(R_xlen_t,R_xlen_t,R_xlen_t)");
             p_setFArrayBlockSize = (Ptr_setFArrayBlockSize)R_GetCCallable("farray", "_farray_setFArrayBlockSize");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_setFArrayBlockSize(Shield<SEXP>(Rcpp::wrap(size)));
+            rcpp_result_gen = p_setFArrayBlockSize(Shield<SEXP>(Rcpp::wrap(size)), Shield<SEXP>(Rcpp::wrap(limit)), Shield<SEXP>(Rcpp::wrap(buf_size)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
@@ -45,17 +45,17 @@ namespace farray {
         return Rcpp::as<R_xlen_t >(rcpp_result_gen);
     }
 
-    inline R_xlen_t getFArrayBlockSize() {
-        typedef SEXP(*Ptr_getFArrayBlockSize)();
+    inline R_xlen_t getFArrayBlockSize(int which = 0) {
+        typedef SEXP(*Ptr_getFArrayBlockSize)(SEXP);
         static Ptr_getFArrayBlockSize p_getFArrayBlockSize = NULL;
         if (p_getFArrayBlockSize == NULL) {
-            validateSignature("R_xlen_t(*getFArrayBlockSize)()");
+            validateSignature("R_xlen_t(*getFArrayBlockSize)(int)");
             p_getFArrayBlockSize = (Ptr_getFArrayBlockSize)R_GetCCallable("farray", "_farray_getFArrayBlockSize");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_getFArrayBlockSize();
+            rcpp_result_gen = p_getFArrayBlockSize(Shield<SEXP>(Rcpp::wrap(which)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();

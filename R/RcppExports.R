@@ -17,12 +17,12 @@ reshapeOrDrop <- function(x, reshape = NULL, drop = FALSE) {
     .Call(`_farray_reshapeOrDrop`, x, reshape, drop)
 }
 
-setFArrayBlockSize <- function(size) {
-    .Call(`_farray_setFArrayBlockSize`, size)
+setFArrayBlockSize <- function(size, limit = 0L, buf_size = 0L) {
+    .Call(`_farray_setFArrayBlockSize`, size, limit, buf_size)
 }
 
-getFArrayBlockSize <- function() {
-    .Call(`_farray_getFArrayBlockSize`)
+getFArrayBlockSize <- function(which = 0L) {
+    .Call(`_farray_getFArrayBlockSize`, which)
 }
 
 subsetFM <- function(rootPath, listOrEnv, dim, dtype, reshape, drop) {

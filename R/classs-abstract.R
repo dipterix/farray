@@ -493,9 +493,16 @@ AbstractFArray <- R6::R6Class(
     },
 
     sexptype = function(){
-      sample_data <- 1
-      storage.mode(sample_data) <- self$storage_format
-      getSexpType(sample_data)
+      switch (self$storage_format,
+        'double' = 14L,
+        'integer' = 13L,
+        {
+          sample_data <- 1
+          storage.mode(sample_data) <- self$storage_format
+          force(sample_data)
+          getSexpType(sample_data)
+        }
+      )
     },
 
     partition_length = function(){

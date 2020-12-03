@@ -129,16 +129,16 @@ FileArray <- R6::R6Class(
   drop <- isTRUE(drop)
 
   # set block size to be the first margin to maximize reading speed
-  block_size <- getFArrayBlockSize()
-  if(block_size >= dim(x)[[1]]){
-    block_size <- dim(x)[[1]]
-    setFArrayBlockSize(block_size)
-
-    on.exit({
-      # reset block size for farrays
-      setFArrayBlockSize(-1)
-    }, add = TRUE)
-  }
+  # block_size <- getFArrayBlockSize()
+  # if(block_size >= dim(x)[[1]]){
+  #   block_size <- dim(x)[[1]]
+  #   setFArrayBlockSize(block_size)
+  #
+  #   on.exit({
+  #     # reset block size for farrays
+  #     setFArrayBlockSize(-1)
+  #   }, add = TRUE)
+  # }
 
   subsetFM(rootPath = x$storage_path,listOrEnv = environment(),
            dim = x$dim,dtype = x$sexptype,reshape = reshape,drop = drop)
