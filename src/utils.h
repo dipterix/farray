@@ -1,4 +1,3 @@
-
 #ifndef DIP_FARRAY_UTILS_H
 #define DIP_FARRAY_UTILS_H
 
