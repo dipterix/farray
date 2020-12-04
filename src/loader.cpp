@@ -72,8 +72,8 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
   auto ptr_alt_private = res.begin();
   std::string partition_path_private;
   bool bugged = false;
-  // BinaryFileConn fcon; = BinaryFileConn(file, true);
-  FILE* input = NULL;
+  BinaryFileConn fcon = BinaryFileConn(); // = BinaryFileConn(file, true);
+  // FILE* input = NULL;
 
 #pragma omp for schedule(static, 1) nowait
 {
@@ -83,17 +83,17 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
       // R_CheckUserInterrupt();
       ptr_res_private = res.begin() + (block_size) * (file_ii - 1);
       // try to directly open the file
-      input = NULL;
+      // input = NULL;
       bugged = false;
 
       // It's possible the file cannot be opened
-      try{ input = fopen( partition_path_private.c_str(), "rb" ); } catch(...) {}
+      fcon.connect( partition_path_private, false );
 
-      if(input) {
+      if(fcon.isValid()) {
         try {
           if(cpp_fileLength(partition_path_private) == (expect_nrows * element_size)) {
             // cpp_readBin(input, (char*)(ptr_res_private), expect_nrows, element_size, 0, false);
-            cpp_readBin<T>(input, ptr_res_private, expect_nrows, 0, false);
+            cpp_readBin<T>(fcon.conn, ptr_res_private, expect_nrows, 0, false);
           } else {
             bugged = true;
           }
@@ -101,7 +101,7 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
           // cannot open the partition
           bugged = true;
         }
-        try{ fclose(input); } catch(...) {}
+        fcon.close();
       } else {
         // file missing, fill with NA
         bugged = true;
@@ -311,13 +311,13 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
 
     // create buffers
     int64_t total_schedules = schedule_index.size();
-    int omp_chunk = (int) partition_index.size();
-    if(total_schedules - omp_chunk < 0 ){
-      omp_chunk = (int) total_schedules;
-    }
-    if(omp_chunk < 1){
-      omp_chunk = 1;
-    }
+    // int omp_chunk = (int) partition_index.size();
+    // if(total_schedules - omp_chunk < 0 ){
+    //   omp_chunk = (int) total_schedules;
+    // }
+    // if(omp_chunk < 1){
+    //   omp_chunk = 1;
+    // }
 
     int64_t buffer_xlen;
     if(block_indexed) {
@@ -337,7 +337,8 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
   auto ptr_alt_private = res.begin();
   std::string partition_path_private;
   bool bugged = false;
-  FILE* input;
+  BinaryFileConn fcon = BinaryFileConn();
+  // FILE* input;
   int64_t file_len;
   int64_t lidx;
   T buffer[buffer_xlen];
@@ -349,7 +350,7 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
   // for non-indexed array
   int64_t mod, rest, sub_index, subblock_dim_ii, tmp;
 
-#pragma omp for collapse(2) schedule(dynamic, omp_chunk) nowait
+#pragma omp for collapse(2) schedule(static, 1) nowait
 {
   for(int64_t li = 0; li < partition_index.size(); li++){
     for(int64_t schedule_ii = 0; schedule_ii < total_schedules; schedule_ii++){
@@ -370,13 +371,13 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
 
         // Check is file valid?
         partition_path_private = rootPath + std::to_string(lidx) + ".bmat";
-        input = NULL;
+        // input = NULL;
         bugged = false;
 
         // It's possible the file cannot be opened
-        try{ input = fopen( partition_path_private.c_str(), "rb" ); } catch(...) {}
+        fcon.connect( partition_path_private, false );
 
-        if(input) {
+        if(fcon.isValid()) {
           try {
             file_len = cpp_fileLength(partition_path_private);
             if(file_len == (expect_nrows * element_size)) {
@@ -415,10 +416,10 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
                   // load buffer
                   if(file_len < (reader_start-1 + buffer_xlen) * element_size){
                     // cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1, true);
-                    cpp_readBin<T>(input, buffer, buffer_xlen, reader_start-1, true);
+                    cpp_readBin<T>(fcon.conn, buffer, buffer_xlen, reader_start-1, true);
                   } else {
                     // cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1, false);
-                    cpp_readBin<T>(input, buffer, buffer_xlen, reader_start-1, false);
+                    cpp_readBin<T>(fcon.conn, buffer, buffer_xlen, reader_start-1, false);
                   }
                   buffer_pos = 0;
 
@@ -435,10 +436,10 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
                         buffer_pos += sub_index;
                         if(file_len < (reader_start-1 + buffer_xlen + buffer_pos) * element_size){
                           // cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, true);
-                          cpp_readBin<T>(input, buffer, buffer_xlen, reader_start-1+buffer_pos, true);
+                          cpp_readBin<T>(fcon.conn, buffer, buffer_xlen, reader_start-1+buffer_pos, true);
                         } else {
                           // cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, false);
-                          cpp_readBin<T>(input, buffer, buffer_xlen, reader_start-1+buffer_pos, false);
+                          cpp_readBin<T>(fcon.conn, buffer, buffer_xlen, reader_start-1+buffer_pos, false);
                         }
                       }
                       *ptr_res_private++ = *(buffer + sub_index);
@@ -447,11 +448,11 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
                 } else {
                   // load buffer
                   if(file_len < (reader_start-1 + buffer_xlen) * element_size){
-                    // cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1, true);
-                    cpp_readBin<T>(input, buffer, buffer_xlen, reader_start-1, true);
+                    // cpp_readBin(fcon.conn, (char*) buffer, buffer_xlen, element_size, reader_start-1, true);
+                    cpp_readBin<T>(fcon.conn, buffer, buffer_xlen, reader_start-1, true);
                   } else {
-                    // cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1, false);
-                    cpp_readBin<T>(input, buffer, buffer_xlen, reader_start-1, false);
+                    // cpp_readBin(fcon.conn, (char*) buffer, buffer_xlen, element_size, reader_start-1, false);
+                    cpp_readBin<T>(fcon.conn, buffer, buffer_xlen, reader_start-1, false);
                   }
                   buffer_pos = 0;
 
@@ -515,11 +516,11 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
                         // need to load new data
                         buffer_pos += sub_index;
                         if(file_len < (reader_start-1 + buffer_xlen + buffer_pos) * element_size){
-                          // cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, true);
-                          cpp_readBin<T>(input, buffer, buffer_xlen, reader_start-1+buffer_pos, true);
+                          // cpp_readBin(fcon.conn, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, true);
+                          cpp_readBin<T>(fcon.conn, buffer, buffer_xlen, reader_start-1+buffer_pos, true);
                         } else {
-                          // cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, false);
-                          cpp_readBin<T>(input, buffer, buffer_xlen, reader_start-1+buffer_pos, false);
+                          // cpp_readBin(fcon.conn, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, false);
+                          cpp_readBin<T>(fcon.conn, buffer, buffer_xlen, reader_start-1+buffer_pos, false);
                         }
                       }
 
@@ -540,7 +541,7 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
             // cannot open the partition
             bugged = true;
           }
-          try{ fclose(input); } catch(...) {}
+          fcon.close();
         } else {
           // file missing, fill with NA
           bugged = true;

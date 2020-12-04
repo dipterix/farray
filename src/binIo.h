@@ -16,9 +16,19 @@ FILE* openForWriting(std::string file, std::string mode = "rb+", bool create = t
 
 class BinaryFileConn {
 public:
-  BinaryFileConn(const std::string& file, bool write = false, bool create = true):
-  file(file) {
+  BinaryFileConn() {
+    this->file = "";
+    this->conn = NULL;
+    this->mode = "rb";
+  }
+  BinaryFileConn(const std::string& file, bool write = false, bool create = true) {
+    this->connect(file, write, create);
+  };
+
+  bool connect(const std::string& file, bool write = false, bool create = true) {
+    this->close();
     try {
+      this->file = file;
       if(write) {
         this->mode = "rb+";
         this->conn = openForWriting(file, "rb+", create);
@@ -29,6 +39,7 @@ public:
     } catch(...){
       this->conn = NULL;
     }
+    return ( this->isValid() );
   };
 
   ~BinaryFileConn(){
@@ -46,11 +57,12 @@ public:
       } catch(...){
         return(false);
       }
+      this->conn = NULL;
     }
     return(true);
   };
 
-  const std::string file;
+  std::string file;
   FILE* conn;
   std::string mode;
 };
