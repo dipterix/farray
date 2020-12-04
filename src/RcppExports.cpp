@@ -8,6 +8,16 @@
 
 using namespace Rcpp;
 
+// isLittleEndian
+bool isLittleEndian();
+RcppExport SEXP _farray_isLittleEndian() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(isLittleEndian());
+    return rcpp_result_gen;
+END_RCPP
+}
 // loc2idx3
 std::vector<int64_t> loc2idx3(SEXP locations, std::vector<int64_t>& parent_dim);
 RcppExport SEXP _farray_loc2idx3(SEXP locationsSEXP, SEXP parent_dimSEXP) {
@@ -246,6 +256,19 @@ RcppExport SEXP _farray_hasOpenMP() {
     }
     UNPROTECT(1);
     return rcpp_result_gen;
+}
+// cpp_writeBin2
+int64_t cpp_writeBin2(std::string file, SEXP data, int64_t skip);
+RcppExport SEXP _farray_cpp_writeBin2(SEXP fileSEXP, SEXP dataSEXP, SEXP skipSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type file(fileSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< int64_t >::type skip(skipSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_writeBin2(file, data, skip));
+    return rcpp_result_gen;
+END_RCPP
 }
 // dropDimension
 SEXP dropDimension(SEXP x);
@@ -529,6 +552,7 @@ RcppExport SEXP _farray_RcppExport_registerCCallable() {
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_farray_isLittleEndian", (DL_FUNC) &_farray_isLittleEndian, 0},
     {"_farray_loc2idx3", (DL_FUNC) &_farray_loc2idx3, 2},
     {"_farray_parseSlices", (DL_FUNC) &_farray_parseSlices, 3},
     {"_farray_parseAndScheduleBlocks2", (DL_FUNC) &_farray_parseAndScheduleBlocks2, 3},
@@ -539,6 +563,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_farray_getFArrayThread", (DL_FUNC) &_farray_getFArrayThread, 1},
     {"_farray_setFArrayThread", (DL_FUNC) &_farray_setFArrayThread, 2},
     {"_farray_hasOpenMP", (DL_FUNC) &_farray_hasOpenMP, 0},
+    {"_farray_cpp_writeBin2", (DL_FUNC) &_farray_cpp_writeBin2, 3},
     {"_farray_dropDimension", (DL_FUNC) &_farray_dropDimension, 1},
     {"_farray_prod2", (DL_FUNC) &_farray_prod2, 2},
     {"_farray_parseDots", (DL_FUNC) &_farray_parseDots, 2},

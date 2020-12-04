@@ -72,6 +72,7 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
   auto ptr_alt_private = res.begin();
   std::string partition_path_private;
   bool bugged = false;
+  // BinaryFileConn fcon; = BinaryFileConn(file, true);
   FILE* input = NULL;
 
 #pragma omp for schedule(static, 1) nowait
@@ -91,7 +92,8 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
       if(input) {
         try {
           if(cpp_fileLength(partition_path_private) == (expect_nrows * element_size)) {
-            cpp_readBin(input, (char*)(ptr_res_private), expect_nrows, element_size, 0, false);
+            // cpp_readBin(input, (char*)(ptr_res_private), expect_nrows, element_size, 0, false);
+            cpp_readBin<T>(input, ptr_res_private, expect_nrows, 0, false);
           } else {
             bugged = true;
           }
@@ -412,9 +414,11 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
 
                   // load buffer
                   if(file_len < (reader_start-1 + buffer_xlen) * element_size){
-                    cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1, true);
+                    // cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1, true);
+                    cpp_readBin<T>(input, buffer, buffer_xlen, reader_start-1, true);
                   } else {
-                    cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1, false);
+                    // cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1, false);
+                    cpp_readBin<T>(input, buffer, buffer_xlen, reader_start-1, false);
                   }
                   buffer_pos = 0;
 
@@ -430,9 +434,11 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
                         // need to load new data
                         buffer_pos += sub_index;
                         if(file_len < (reader_start-1 + buffer_xlen + buffer_pos) * element_size){
-                          cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, true);
+                          // cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, true);
+                          cpp_readBin<T>(input, buffer, buffer_xlen, reader_start-1+buffer_pos, true);
                         } else {
-                          cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, false);
+                          // cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, false);
+                          cpp_readBin<T>(input, buffer, buffer_xlen, reader_start-1+buffer_pos, false);
                         }
                       }
                       *ptr_res_private++ = *(buffer + sub_index);
@@ -441,9 +447,11 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
                 } else {
                   // load buffer
                   if(file_len < (reader_start-1 + buffer_xlen) * element_size){
-                    cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1, true);
+                    // cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1, true);
+                    cpp_readBin<T>(input, buffer, buffer_xlen, reader_start-1, true);
                   } else {
-                    cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1, false);
+                    // cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1, false);
+                    cpp_readBin<T>(input, buffer, buffer_xlen, reader_start-1, false);
                   }
                   buffer_pos = 0;
 
@@ -507,9 +515,11 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
                         // need to load new data
                         buffer_pos += sub_index;
                         if(file_len < (reader_start-1 + buffer_xlen + buffer_pos) * element_size){
-                          cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, true);
+                          // cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, true);
+                          cpp_readBin<T>(input, buffer, buffer_xlen, reader_start-1+buffer_pos, true);
                         } else {
-                          cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, false);
+                          // cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, false);
+                          cpp_readBin<T>(input, buffer, buffer_xlen, reader_start-1+buffer_pos, false);
                         }
                       }
 
