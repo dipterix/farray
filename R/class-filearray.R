@@ -78,10 +78,13 @@ FileArray <- R6::R6Class(
       if(!self$has_partition(part)){
         file <- self$get_partition_fpath(part, full_path = TRUE, type = 'combined')
         ptr <- filematrix::fm.create(file, self$partition_length, 1, type = self$storage_format)
+        on.exit({
+          filematrix::close(ptr)
+        }, add = TRUE)
         if(!nofill){
           ptr[] <- rep(self$sample_na, self$partition_length)
         }
-        filematrix::close(ptr)
+
         return(TRUE)
       }
       return(FALSE)
@@ -97,18 +100,6 @@ FileArray <- R6::R6Class(
         idx$reshape <- reshape
         idx$drop <- FALSE
         return(eval(as.call(c(list(quote(`[`), quote(self)), idx))))
-        #
-        # file <- self$get_partition_fpath(part, full_path = TRUE, type = 'combined')
-        # ptr <- filematrix::fm.open(file)
-        # re <- ptr[]
-        # filematrix::close(ptr)
-        # if(is.null(reshape)){
-        #   reshapeOrDrop(re, reshape = self$partition_dim(), drop = FALSE)
-        # } else {
-        #   reshapeOrDrop(re, reshape = as.numeric(reshape), drop = FALSE)
-        # }
-        #
-        # return(re)
       } else {
         array(self$sample_na, self$partition_dim())
       }
@@ -172,13 +163,13 @@ FileArray <- R6::R6Class(
       do.call(`[`, c(list(quote(value)), fake_idx))
     }
     # copy all to re inplace
-    for(ii in seq_len(x$npart)){
+    lapply(seq_len(x$npart), function(ii){
       x$initialize_partition(part = ii, nofill = TRUE)
       file <- x$get_partition_fpath(ii, full_path = TRUE, type = 'combined')
       ptr_file <- filematrix::fm.open(file)
+      on.exit({ filematrix::close(ptr_file) })
       ptr_file[] <- slice_value(ii)
-      filematrix::close(ptr_file)
-    }
+    })
   } else {
     # x[i,j,k]
     loc <- parsed$location_indices
