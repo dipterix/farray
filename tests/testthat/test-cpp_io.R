@@ -58,6 +58,13 @@ test_that("Saver", {
   x[idx, idx, , ] <- a[idx, idx, , ]
   expect_equal(x[idx, idx, , ], a[idx, idx, , ])
 
+  # partial saving with duplicated values
+  reset_x()
+  idx <- c(2, 2)
+  system.time({x[idx, idx, , ] <- a[idx, idx, , ]})
+  expect_equal(x[idx, idx, , ], a[idx, idx, , ])
+  expect_equal(x[1:3,1:3,,] , x[c(NA, 2, NA), c(NA, 2, NA),,])
+
   # partial saving with duplicated values and NA
   reset_x()
   idx <- c(2, NA, 2)

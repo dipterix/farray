@@ -155,8 +155,8 @@ FileArray <- R6::R6Class(
   }
 
   parsed <- parseAndScheduleBlocks2(environment(), x$dim, TRUE)
-  # parsed <- parseAndScheduleBlocks2(list(1:10,2:10,3:10,4:10), x$dim, TRUE)
-  # parsed <- parseAndScheduleBlocks2(list(1,1,1,1), x$dim, TRUE)
+  # parsed <- parseAndScheduleBlocks2(list(1:10,2:10,3:10,4:5), x$dim, FALSE)
+  # parsed <- parseAndScheduleBlocks2(list(idx,idx,get_missing_value(),get_missing_value()), x$dim, F)
 
   if(parsed$subset_mode == 1){
     stop("FileArray does not support single subscript (x[i]<-v), try x[]<-v or x[i,j,k,...]<-v")
@@ -191,16 +191,16 @@ FileArray <- R6::R6Class(
     # check if the schedule is made
     schedule <- parsed$schedule
     block_ndims <- schedule$block_ndims
+    block_length_orig <- prod(schedule$block_dimension)  # prod(dim[1:block_ndims])
 
-    ptr <- 1
-    blocksize <- schedule$block_expected_length
+    blocksize <- schedule$block_expected_length  # prod(target_dim[1:block_ndims])
 
     if(schedule$block_indexed){
       value <- array(value, dim = c(blocksize, length(schedule$schedule_index), length(partitions)))
     } else {
-
-      value <- array(value, dim = c(parsed$expected_length / length(partitions), length(partitions)))
+      value <- array(value, dim = c(blocksize * length(schedule$schedule_index), length(partitions)))
     }
+
 
     for(ff in seq_along(partitions)){
       file_ii <- partitions[[ff]]
@@ -213,19 +213,22 @@ FileArray <- R6::R6Class(
         # file exists
         for(ii in seq_along(schedule$schedule_index)){
           schedule_ii <- schedule$schedule_index[[ii]]
-          row_number <- blocksize * (schedule_ii-1) + schedule$block_schedule
-          sel <- row_number > 0
-          ptr_file[row_number[sel], 1] <- value[sel,ii,ff]
+          row_number <- block_length_orig * (schedule_ii-1) + schedule$block_schedule
+          # sel <- row_number > 0
+          sel <- !(row_number <= 0 | duplicated(row_number))
+          ptr_file[row_number[sel], 1] <- as.vector(value[sel,ii,ff])
         }
       } else {
         # ndim == 2
-        row_number <- loc[[1]]
-        tryCatch({
-          sel <- row_number > 0
-          ptr_file[row_number[sel], 1] <- value[sel,ff]
-        }, error = function(e){
-          ptr_file[, 1] <- value[,ff]
-        })
+
+        arr <- ptr_file[]
+        dim(arr) <- x$partition_dim()
+        loc_local <- loc
+        loc_local[[x$ndim]] <- 1
+        expr <- as.call(c(list(quote(`[<-`), quote(arr)), loc_local, list(quote(value[,ff]))))
+        arr <- eval(expr)
+        ptr_file[] <- as.vector(arr)
+
       }
       filematrix::close(ptr_file)
 
