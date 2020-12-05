@@ -154,7 +154,7 @@ FileArray <- R6::R6Class(
     stop("`[<-.FileArray`: x is read-only")
   }
 
-  parsed <- parseAndScheduleBlocks2(environment(), x$dim, TRUE)
+  parsed <- parseAndScheduleBlocks2(environment(), x$dim, FALSE)
   # parsed <- parseAndScheduleBlocks2(list(1:10,2:10,3:10,4:5), x$dim, FALSE)
   # parsed <- parseAndScheduleBlocks2(list(idx,idx,get_missing_value(),get_missing_value()), x$dim, F)
 
@@ -202,20 +202,28 @@ FileArray <- R6::R6Class(
     }
 
 
-    for(ff in seq_along(partitions)){
+    lapply(seq_along(partitions), function(ff){
       file_ii <- partitions[[ff]]
       # No file, NA
       x$initialize_partition(part = file_ii)
       file <- x$get_partition_fpath(file_ii, full_path = TRUE, type = 'combined')
       ptr_file <- filematrix::fm.open(file, readonly = FALSE)
+      on.exit({
+        filematrix::close(ptr_file)
+      }, add = TRUE)
 
       if(schedule$block_indexed){
         # file exists
         for(ii in seq_along(schedule$schedule_index)){
           schedule_ii <- schedule$schedule_index[[ii]]
           row_number <- block_length_orig * (schedule_ii-1) + schedule$block_schedule
+
+          if(any(row_number <= 0)){
+            stop("NAs are not allowed in subscripted assignments")
+          }
+
           # sel <- row_number > 0
-          sel <- !(row_number <= 0 | duplicated(row_number))
+          sel <- !duplicated(row_number)
           ptr_file[row_number[sel], 1] <- as.vector(value[sel,ii,ff])
         }
       } else {
@@ -230,9 +238,8 @@ FileArray <- R6::R6Class(
         ptr_file[] <- as.vector(arr)
 
       }
-      filematrix::close(ptr_file)
 
-    }
+    })
 
   }
 

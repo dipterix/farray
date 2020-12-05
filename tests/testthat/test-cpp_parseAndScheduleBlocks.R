@@ -9,8 +9,8 @@ test_that("subset scheduler-normal case, NA & 0 cases", {
     slice_copy <- lapply(slice, I); force(slice_copy)
     res <- parseAndScheduleBlocks2(slice_copy, dim)
     re <- res$schedule
-    block_lb <- getFArrayBlockSize()[1]
-    block_ub <- 31250000
+    block_lb <- getFArrayBlockSize(0)
+    block_ub <- getFArrayBlockSize(1)
     ndims <- length(dim)
 
     valid_slices <- lapply(seq_along(slice), function(ii){

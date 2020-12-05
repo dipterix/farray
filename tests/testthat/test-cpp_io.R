@@ -68,9 +68,9 @@ test_that("Saver", {
   # partial saving with duplicated values and NA
   reset_x()
   idx <- c(2, NA, 2)
-  system.time({x[idx, idx, , ] <- a[idx, idx, , ]})
-  expect_equal(x[idx, idx, , ], a[idx, idx, , ])
-  expect_equal(x[1:3,1:3,,] , x[c(NA, 2, NA), c(NA, 2, NA),,])
+  expect_error({
+    system.time({x[idx, idx, , ] <- a[idx, idx, , ]})
+  })
 
   # ------------------------ schedule blocks: indexed --------------------
   setFArrayBlockSize(-1,-1,-1)
@@ -92,10 +92,9 @@ test_that("Saver", {
   # partial saving with duplicated values and NA
   reset_x()
   idx <- c(2, NA)
-  system.time({x[idx, idx, , ] <- a[idx, idx, , ]})
-  expect_equal(file.size(x$get_partition_fpath(1)) , 8 * x$partition_length)
-  expect_equal(x[idx, idx, , ], a[idx, idx, , ])
-  expect_equal(x[1:3,1:3,,] , x[c(NA, 2, NA), c(NA, 2, NA),,])
+  expect_error({
+    system.time({x[idx, idx, , ] <- a[idx, idx, , ]})
+  })
 
   reset_x()
   idx <- c(2, 2)
