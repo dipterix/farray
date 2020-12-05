@@ -74,12 +74,7 @@ using namespace Rcpp;
  * -
  *
  */
-// Used to partition to sub-blocks
-static R_xlen_t BLOCKSIZE = 2048;
-// If sub-block size is too large, don't calculate indices (memory inefficient)
-// ~ 250 MB index set
-static R_xlen_t BLOCKLARGE = 4194304; // 2048^2, 33.6 MB per core, total memory overhead is 268 MB for double float * 8 cores
-static R_xlen_t BLOCKBUFFER = FARRAY_BUFFERSIZE; // OMP buffer size
+
 
 const static int64_t INTEGER64_ONE = 1;
 const static R_xlen_t INTEGER_XLEN_ONE = 1;

@@ -116,7 +116,7 @@ ScheduledIndex::ScheduledIndex(SEXP locations, const std::vector<int64_t>& dim, 
   int64_t subblock_idx_size = block_length;
   std::vector<std::pair<std::vector<int64_t>, bool>> buffer_loc_vec;
   SEXP buffer_loc;
-  if(buffer_margin >= 2 && (block_size < BLOCKLARGE || forceSchedule)){
+  if(buffer_margin >= 2 && (block_size < getFArrayBlockSize(1) || forceSchedule)){
     buffer_expanded = true;
     buffer_loc_vec = std::vector<std::pair<std::vector<int64_t>, bool>>(buffer_margin);
     buffer_loc = PROTECT(Rf_allocVector(VECSXP, buffer_margin));

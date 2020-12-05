@@ -322,11 +322,11 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
     int64_t buffer_xlen;
     if(block_indexed) {
       buffer_xlen = block_schedule_end - block_schedule_start + 1;
-      if(buffer_xlen > BLOCKBUFFER){
-        buffer_xlen = BLOCKBUFFER;
+      if(buffer_xlen > getFArrayBlockSize(2)){
+        buffer_xlen = getFArrayBlockSize(2);
       }
     } else {
-      buffer_xlen = BLOCKBUFFER;
+      buffer_xlen = getFArrayBlockSize(2);
     }
 
 #pragma omp parallel num_threads(nThread) private(chunk_end, chunk_start, reader_start, reader_end)

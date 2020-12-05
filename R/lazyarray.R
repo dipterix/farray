@@ -154,23 +154,6 @@ farray <- function(
   path, dim, read_only = FALSE,
   storage_format = 'double',
   meta_name = 'farray.meta'){
-
-  call <- match.call()
-
-  if(!storage_format %in% c("integer", "double")){
-    stop("FileArray only support `integer` or `double` data types.")
-  }
-
-  call[[1]] <- quote(filearray)
-  eval(call)
-}
-
-#' @rdname farray
-#' @export
-filearray <- function(
-  path, dim, read_only = FALSE,
-  storage_format = 'double',
-  meta_name = 'farray.meta'){
   if (missing(dim)) {
     re <-
       FileArray$new(
@@ -194,6 +177,10 @@ filearray <- function(
   }
   re
 }
+
+#' @rdname farray
+#' @export
+filearray <- farray
 
 #' @rdname farray
 #' @export
