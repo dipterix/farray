@@ -58,7 +58,8 @@ test_that("Saver", {
   reset_x()
   idx <- c(2, NA)
   expect_error({
-    system.time({x[idx, idx, , ] <- a[idx, idx, , ]})
+    x[idx, idx, , ] <- a[idx, idx, , ]
+    expect_equal(x[idx, idx, , ] , a[idx, idx, , ])
   })
 
   reset_x()
@@ -91,7 +92,7 @@ test_that("Saver", {
   expect_equal(file.size(x$get_partition_fpath(1)) , 8 * x$partition_length)
 
   # partial saving with random index
-  idx <- sample(100, 20)
+  idx <- sample(100, 20); #print(idx)
   x[idx, idx, , ] <- a[idx, idx, , ]
   expect_equal(x[idx, idx, , ], a[idx, idx, , ])
 
@@ -106,7 +107,8 @@ test_that("Saver", {
   reset_x()
   idx <- c(2, NA, 2)
   expect_error({
-    system.time({x[idx, idx, , ] <- a[idx, idx, , ]})
+    x[idx, idx, , ] <- a[idx, idx, , ]
+    expect_equal(x[idx, idx, , ] , a[idx, idx, , ])
   })
   setFArrayBlockSize(-1,-1,-1)
 })

@@ -135,7 +135,6 @@ FileArray <- R6::R6Class(
            dim = x$dim,dtype = x$sexptype,reshape = reshape,drop = drop)
 }
 
-
 #' @export
 `[<-.FileArray` <- function(x, ..., value){
   if(!x$is_valid){
@@ -237,3 +236,58 @@ FileArray <- R6::R6Class(
   invisible(x)
 }
 
+
+# `[<-.FileArray` <- function(x, ..., value){
+#   if(!x$is_valid){
+#     stop("`[<-.FileArray`: x is no longer valid (data has been removed).")
+#   }
+#   if(!x$can_write){
+#     stop("`[<-.FileArray`: x is read-only")
+#   }
+#
+#   if(length(value)){
+#
+#     parsed <- parseAndScheduleBlocks2(environment(), x$dim)
+#     # parsed <- parseAndScheduleBlocks2(list(1:10,2:10,3:10,4:10), x$dim, TRUE)
+#     # parsed <- parseAndScheduleBlocks2(list(1,1,1,1), x$dim, TRUE)
+#
+#     if(parsed$subset_mode == 1){
+#       stop("FileArray does not support single subscript (x[i]<-v), try x[]<-v or x[i,j,k,...]<-v")
+#     }
+#     partition_length <- prod(x$partition_dim())
+#
+#     # x[]
+#     if(parsed$subset_mode == 2){
+#       value <- array(value, dim = x$dim)
+#       fake_idx <- lapply(x$dim, function(x){ get_missing_value() })
+#       slice_value <- function(ii){
+#         fake_idx[[x$ndim]] <- ii
+#         re <- as.vector(do.call(`[`, c(list(quote(value)), fake_idx)))
+#         storage.mode(re) <- x$storage_format
+#         re
+#       }
+#       # copy all to re inplace
+#       for(ii in seq_len(x$npart)){
+#         file <- x$get_partition_fpath(ii, type = 'data', full_path = TRUE)
+#         writeBin(object = slice_value(ii), con = file, endian = 'little')
+#         # cpp_writeBin2(normalizePath(file, mustWork = TRUE), slice_value(ii), skip = 0)
+#       }
+#     } else {
+#       # x[i,j,k]
+#
+#       if(storage.mode(value) != storage.mode(x$sample_na)){
+#         storage.mode(value) <- storage.mode(x$sample_na)
+#       }
+#       # // ensure partition
+#       # cpp_fillPartition(filePath, partition_length, na, false);
+#       lapply2(parsed$schedule$partition_index, function(part){
+#         x$initialize_partition(part, nofill = FALSE)
+#       })
+#
+#       subsetAssignFM(normalizePath(x$storage_path), environment(), x$dim, as.vector(value));
+#     }
+#   }
+#
+#
+#   invisible(x)
+# }

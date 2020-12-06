@@ -45,12 +45,12 @@ hasOpenMP <- function() {
     .Call(`_farray_hasOpenMP`)
 }
 
-cpp_writeBin2 <- function(file, data, skip = 0L) {
-    .Call(`_farray_cpp_writeBin2`, file, data, skip)
+testt <- function(file) {
+    .Call(`_farray_testt`, file)
 }
 
-subsetAssignFM <- function(rootPath, listOrEnv, dim, data) {
-    .Call(`_farray_subsetAssignFM`, rootPath, listOrEnv, dim, data)
+ensurePartition <- function(file, length, na, size) {
+    .Call(`_farray_ensurePartition`, file, length, na, size)
 }
 
 dropDimension <- function(x) {

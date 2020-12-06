@@ -11,26 +11,59 @@ bool Rf2_fileExists(const std::string& file) {
   return LOGICAL(e)[0];
 }
 
+SEXP ensurePartition(const std::string& file, int64_t length, SEXP na, int size){
+  Rcpp::Environment env = Rcpp::Environment::base_env();
+  Function fileExists = env["file.exists"];
+  Function fileSize = env["file.size"];
+
+  SEXP e = fileExists(file);
+  if(LOGICAL(e)[0]){
+    e = fileSize(file);
+    if(as<int64_t>(e) >= size* length) {
+      return R_NilValue;
+    }
+  }
+
+  RFileConn fcon;
+  fcon.connect(file, "r+b", true);
+  fcon.ensureLength(length, size, na);
+  fcon.close();
+  return(R_NilValue);
+}
+
 RFileConn::RFileConn() {
   this->file = "";
   this->mode = "rb";
   this->conn = R_NilValue;
   Rcpp::Environment env = Rcpp::Environment::base_env();
   this->env = env;
+  this->ns = Rcpp::Environment::namespace_env("farray");
   this->raw_buffer = R_NilValue;
+  this->locked = false;
 };
 
 size_t RFileConn::seek(int64_t where, const std::string& rw, const std::string& origin) {
+  if(this->locked){
+    stop("???");
+  }
+  this->locked = true;
   Function f = env["seek"];
   SEXP re = f(this->conn, Shield<SEXP>(wrap(where)), Shield<SEXP>(wrap(origin)), Shield<SEXP>(wrap(rw)));
+  this->locked = false;
   return as<size_t>(re);
 }
 
 int64_t RFileConn::fileBytes(){
-  if(!this->exists()){ return (0); }
-  Function f = this->env["file.size"];
-  SEXP len = f(this->file);
-  return as<int64_t>(len);
+  int64_t re = 0;
+  if(!this->exists()){ return (re); }
+  // if(this->isValid()) {
+  //   Function fl = this->env["flush"];
+  //   fl(this->conn);
+  // }
+  Function fs = this->env["file.size"];
+  SEXP len = fs(this->file);
+  re = as<int64_t>(len);
+  return(re);
 }
 
 void RFileConn::ensureLength(int64_t partition_length, int64_t size, SEXP na) {
@@ -42,6 +75,7 @@ void RFileConn::ensureLength(int64_t partition_length, int64_t size, SEXP na) {
   int64_t expected_bytes = partition_length * size - current_bytes;
   int64_t buffer_bytes = getFArrayBlockSize(2);
 
+
   if(expected_bytes > 0){
     if(buffer_bytes < expected_bytes) {
       buffer_bytes = expected_bytes;
@@ -49,9 +83,10 @@ void RFileConn::ensureLength(int64_t partition_length, int64_t size, SEXP na) {
     // open connection and write
     Function rep = this->env["rep"];
     Function write_bin = this->env["writeBin"];
-    SEXP buffer = PROTECT(rep(na, buffer_bytes / size));
 
-    this->seek(current_bytes, "write", "start");
+    this->seek(0, "write", "end");
+
+    SEXP buffer = PROTECT(rep(na, buffer_bytes / size));
     while(expected_bytes >= buffer_bytes) {
       write_bin(buffer, this->conn, size, "little");
       expected_bytes -= buffer_bytes;
@@ -61,8 +96,9 @@ void RFileConn::ensureLength(int64_t partition_length, int64_t size, SEXP na) {
       UNPROTECT(1);
       buffer = PROTECT(rep(na, expected_bytes / size));
       write_bin(buffer, this->conn, size, "little");
-      UNPROTECT(1);
     }
+    this->seek(0, "write", "start");
+    UNPROTECT(1);
   }
 }
 
@@ -77,6 +113,7 @@ void RFileConn::writeRaw(Rbyte* buffer, size_t len) {
   }
   Function f = env["writeBin"];
   f(this->raw_buffer, this->conn);
+  this->seek(0, "write", "start");
 }
 
 bool RFileConn::exists() {
@@ -86,7 +123,7 @@ bool RFileConn::exists() {
 }
 
 void RFileConn::connect(const std::string& file, const std::string& mode, bool create) {
-  if(this->isValid() && !file.compare(this->file)) {
+  if(this->isValid()) {
     this->close();
   }
   this->file = file;
@@ -97,13 +134,16 @@ void RFileConn::connect(const std::string& file, const std::string& mode, bool c
     Function fileCreate = env["file.create"];
     fileCreate(wrap(file));
   }
-  Function openFile = env["file"];
-  this->conn = openFile(Rcpp::Shield<SEXP>(Rcpp::wrap(file)),
-              Rcpp::Shield<SEXP>(Rcpp::wrap(mode)),
-              Rcpp::Shield<SEXP>(Rcpp::wrap(true)),
-              Rcpp::Shield<SEXP>(Rcpp::wrap("native.enc")),
-              Rcpp::Shield<SEXP>(Rcpp::wrap(false)),
-              Rcpp::Shield<SEXP>(Rcpp::wrap("default.enc")));
+
+  Function openFile = this->ns["open_conn"];
+  Shield<SEXP>(this->conn =
+    openFile(Rcpp::Shield<SEXP>(Rcpp::wrap(file)),
+             Rcpp::Shield<SEXP>(Rcpp::wrap(mode)),
+             Rcpp::Shield<SEXP>(Rcpp::wrap(true)),
+             Rcpp::Shield<SEXP>(Rcpp::wrap("native.enc")),
+             Rcpp::Shield<SEXP>(Rcpp::wrap(false)),
+             Rcpp::Shield<SEXP>(Rcpp::wrap("default.enc")))
+  );
 };
 
 bool RFileConn::isValid() {
@@ -125,15 +165,43 @@ bool RFileConn::isValid() {
 
 void RFileConn::close(){
   try{
-    Function f = env["close.connection"];
+    Function f = this->ns["close_conn"];
     f(this->conn);
   } catch (...) {}
   this->conn = R_NilValue;
 };
 
 
+// [[Rcpp::export]]
+SEXP testt(std::string file){
+  Rcpp::Environment env = Rcpp::Environment::base_env();
+  Function f = env["gc"];
+  RFileConn* con = new RFileConn();
+
+  Rcout << "connect\n";
+  con->connect(file, "r+b");
+  f();
+
+  Rcout << "ensure\n";
+  con->ensureLength(10, 8, wrap(NA_REAL));
+  f();
+
+  Rcout << "valid?\n";
+  con->isValid();
+  f();
+
+  Rcout << "ensure 2\n";
+  con->ensureLength(20, 8, wrap(NA_REAL));
+  f();
+
+
+  con->close();
+  delete con;
+  return R_NilValue;
+}
+
 /*** R
-f <- file.path(tempfile())
+f <- tempfile()
 conn <- testt(f)
 # Rf2_closeFileConnection(conn)
 # file(f, "r+b")

@@ -22,7 +22,19 @@ public:
     this->mode = "rb";
   }
   BinaryFileConn(const std::string& file, bool write = false, bool create = true) {
-    this->connect(file, write, create);
+    this->file = file;
+    try {
+      if(write) {
+        this->mode = "rb+";
+        this->conn = openForWriting(file, "rb+", create);
+      } else {
+        this->mode = "rb";
+        this->conn = fopen(file.c_str(), "rb");
+      }
+    } catch(...){
+      this->mode = "rb";
+      this->conn = NULL;
+    }
   };
 
   bool connect(const std::string& file, bool write = false, bool create = true) {
@@ -139,8 +151,6 @@ int64_t cpp_writeBin(FILE* conn, T* data, size_t dLen, T na, int64_t skip = 0) {
       na_copy = na;
       el_written += fwriteLEndian<T>(&na_copy, 1, conn);
     }
-    Rcout << el_written << "\n";
-
     fflush(conn);
     el_written = 0;
   }
@@ -235,6 +245,46 @@ int64_t cpp_readBin(FILE* conn, T* buffer, int64_t n, int64_t skip = 0, bool che
 
 int64_t cpp_fileLength(const std::string& con);
 
-// bool fileExists(const std::string& con);
+template <typename T>
+int64_t cpp_fillPartition(std::string& file, int64_t n, T na, bool overwrite = false) {
+  BinaryFileConn conn = BinaryFileConn(file, true);
+  if(!conn.isValid()){
+    stop("C++: `cpp_fillPartition`: Cannot open file for writing");
+  }
+  // check file length
+  int64_t skip = 0;
+  int64_t restN = n;
+  int size = sizeof(T);
+  if( !overwrite ){
+    fseek(conn.conn, 0, SEEK_END);
+    skip = ftell(conn.conn) / size;
+    restN = n - skip;
+    fseek(conn.conn, 0, SEEK_END);
+  } else {
+    fseek(conn.conn, 0, SEEK_SET);
+  }
+  int64_t bufferSize = FARRAY_BUFFERSIZE;
+
+  if(bufferSize > restN){ bufferSize = restN; }
+  if(n <= 0 || bufferSize <= 0){
+    conn.close();
+    return (skip);
+  }
+  std::vector<T> nas = std::vector<T>(bufferSize, na);
+
+  while(restN > 0) {
+    if( bufferSize > restN ){
+      bufferSize = restN;
+    }
+    cpp_writeBin<T>(conn.conn, &(nas[0]), bufferSize, na, skip);
+    skip += bufferSize;
+    restN -= bufferSize;
+  }
+  conn.close();
+  return (n);
+}
+
+bool fileExists(const std::string& con);
+
 
 #endif // DIP_FARRAY_FILEIO_H

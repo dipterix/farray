@@ -5,6 +5,9 @@
 
 bool Rf2_fileExists(const std::string& file);
 
+// [[Rcpp::export]]
+SEXP ensurePartition(const std::string& file, int64_t length, SEXP na, int size);
+
 class RFileConn {
 public:
   RFileConn();
@@ -12,6 +15,7 @@ public:
   ~RFileConn(){
     this->close();
     this->raw_buffer = R_NilValue;
+    this->conn = R_NilValue;
   };
 
   void connect(const std::string& file, const std::string& mode, bool create = true);
@@ -27,7 +31,9 @@ public:
   std::string mode;
   SEXP conn;
   Rcpp::Environment env;
+  Rcpp::Environment ns;
   SEXP raw_buffer;
+  bool locked;
 
 };
 

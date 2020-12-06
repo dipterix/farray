@@ -257,30 +257,28 @@ RcppExport SEXP _farray_hasOpenMP() {
     UNPROTECT(1);
     return rcpp_result_gen;
 }
-// cpp_writeBin2
-int64_t cpp_writeBin2(std::string file, SEXP data, int64_t skip);
-RcppExport SEXP _farray_cpp_writeBin2(SEXP fileSEXP, SEXP dataSEXP, SEXP skipSEXP) {
+// testt
+SEXP testt(std::string file);
+RcppExport SEXP _farray_testt(SEXP fileSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type file(fileSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type data(dataSEXP);
-    Rcpp::traits::input_parameter< int64_t >::type skip(skipSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_writeBin2(file, data, skip));
+    rcpp_result_gen = Rcpp::wrap(testt(file));
     return rcpp_result_gen;
 END_RCPP
 }
-// subsetAssignFM
-int64_t subsetAssignFM(const std::string& rootPath, SEXP listOrEnv, const std::vector<int64_t>& dim, SEXP data);
-RcppExport SEXP _farray_subsetAssignFM(SEXP rootPathSEXP, SEXP listOrEnvSEXP, SEXP dimSEXP, SEXP dataSEXP) {
+// ensurePartition
+SEXP ensurePartition(const std::string& file, int64_t length, SEXP na, int size);
+RcppExport SEXP _farray_ensurePartition(SEXP fileSEXP, SEXP lengthSEXP, SEXP naSEXP, SEXP sizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const std::string& >::type rootPath(rootPathSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type listOrEnv(listOrEnvSEXP);
-    Rcpp::traits::input_parameter< const std::vector<int64_t>& >::type dim(dimSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type data(dataSEXP);
-    rcpp_result_gen = Rcpp::wrap(subsetAssignFM(rootPath, listOrEnv, dim, data));
+    Rcpp::traits::input_parameter< const std::string& >::type file(fileSEXP);
+    Rcpp::traits::input_parameter< int64_t >::type length(lengthSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type na(naSEXP);
+    Rcpp::traits::input_parameter< int >::type size(sizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(ensurePartition(file, length, na, size));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -577,8 +575,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_farray_getFArrayThread", (DL_FUNC) &_farray_getFArrayThread, 1},
     {"_farray_setFArrayThread", (DL_FUNC) &_farray_setFArrayThread, 2},
     {"_farray_hasOpenMP", (DL_FUNC) &_farray_hasOpenMP, 0},
-    {"_farray_cpp_writeBin2", (DL_FUNC) &_farray_cpp_writeBin2, 3},
-    {"_farray_subsetAssignFM", (DL_FUNC) &_farray_subsetAssignFM, 4},
+    {"_farray_testt", (DL_FUNC) &_farray_testt, 1},
+    {"_farray_ensurePartition", (DL_FUNC) &_farray_ensurePartition, 4},
     {"_farray_dropDimension", (DL_FUNC) &_farray_dropDimension, 1},
     {"_farray_prod2", (DL_FUNC) &_farray_prod2, 2},
     {"_farray_parseDots", (DL_FUNC) &_farray_parseDots, 2},
