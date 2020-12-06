@@ -235,6 +235,6 @@ int64_t cpp_readBin(FILE* conn, T* buffer, int64_t n, int64_t skip = 0, bool che
 
 int64_t cpp_fileLength(const std::string& con);
 
-bool fileExists(const std::string& con);
+// bool fileExists(const std::string& con);
 
 #endif // DIP_FARRAY_FILEIO_H

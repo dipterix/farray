@@ -49,6 +49,10 @@ cpp_writeBin2 <- function(file, data, skip = 0L) {
     .Call(`_farray_cpp_writeBin2`, file, data, skip)
 }
 
+subsetAssignFM <- function(rootPath, listOrEnv, dim, data) {
+    .Call(`_farray_subsetAssignFM`, rootPath, listOrEnv, dim, data)
+}
+
 dropDimension <- function(x) {
     .Call(`_farray_dropDimension`, x)
 }

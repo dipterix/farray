@@ -52,9 +52,8 @@ int64_t cpp_fileLength(const std::string& con){
   return fsize;
 }
 
-bool fileExists(const std::string& con){
-  Environment env = Environment::base_env();
-  Function f = env["file.exists"];
-  SEXP e = f(Shield<SEXP>(wrap(con)));
-  return LOGICAL(e)[0];
-}
+
+// bool fileExists(const std::string& con){
+//   BinaryFileConn conn = BinaryFileConn(con, false);
+//   return conn.isValid();
+// }

@@ -35,7 +35,7 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
   // for blocked runs (if needed)
   int64_t block_size = std::accumulate(target_dimension.begin(), target_dimension.end()-1, INTEGER64_ONE, std::multiplies<int64_t>());
   int64_t expect_nrows = std::accumulate(dim.begin(), dim.end()-1, INTEGER64_ONE, std::multiplies<int64_t>());
-
+  int64_t expected_partition_bytes = expect_nrows * element_size;
   int64_t chunk_start, chunk_end;
   int64_t reader_start, reader_end;
   int64_t nfiles = *(dim.end() - 1);
@@ -73,6 +73,7 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
   std::string partition_path_private;
   bool bugged = false;
   BinaryFileConn fcon = BinaryFileConn(); // = BinaryFileConn(file, true);
+  int64_t fileLen = 0;
   // FILE* input = NULL;
 
 #pragma omp for schedule(static, 1) nowait
@@ -91,7 +92,8 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
 
       if(fcon.isValid()) {
         try {
-          if(cpp_fileLength(partition_path_private) == (expect_nrows * element_size)) {
+          fileLen = cpp_fileLength(partition_path_private);
+          if(fileLen == expected_partition_bytes) {
             // cpp_readBin(input, (char*)(ptr_res_private), expect_nrows, element_size, 0, false);
             cpp_readBin<T>(fcon.conn, ptr_res_private, expect_nrows, 0, false);
           } else {
@@ -109,7 +111,8 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
 
       if( bugged ){
         // this file is invalid, fill with na
-        ptr_alt_private = ptr_res_private + block_size;
+        ptr_res_private = res.begin() + (block_size) * (file_ii - 1);
+        ptr_alt_private = res.begin() + (block_size) * file_ii;
         while( ptr_alt_private != ptr_res_private ){
           *ptr_res_private++ = na_value;
         }
@@ -123,151 +126,6 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
 
     tok("E subsetFMtemplate - LASUBMOD_NOIDX");
 
-    // } else if(subset_mode == LASUBMOD_SINGLE){
-    //
-    //     tok("S subsetFMtemplate - LASUBMOD_SINGLE");
-    //     // case: subset_mode == 1, x[i], and i can't be R missing value
-    //     std::vector<int64_t> indices = std::get<0>(location_indices[0]);
-    //     std::vector<int64_t>::iterator ptr_indices = indices.begin();
-    //     bool is_negative = negative_subscript[0];
-    //
-    //     // idx from chunk_start to expect_nrows-1
-    //     chunk_start = 0;
-    //     chunk_end = expect_nrows;
-    //     std::vector<bool> sel = std::vector<bool>(indices.size());
-    //     std::vector<bool>::iterator ptr_sel = sel.begin();
-    //     int64_t bump_start = 0;
-    //     bool enable_bump = true;
-    //     // TODO: check negative cases
-    //     if(is_negative){
-    //
-    //       // There is simply no point to do so, data is so large and I'll defer the implementation
-    //       stop("Negative subscript has not been implemented yet.");
-    //       // // No NAs in this case, just iterate through all
-    //       // // indices is in decending order, start from the end
-    //       // for(StringVector::iterator ptr_file = files.begin(); ptr_file != files.end();
-    //       //     ptr_file++, chunk_start += expect_nrows, chunk_end += expect_nrows ) {
-    //       //
-    //       // }
-    //
-    //     } else {
-    //       // initialize with NA
-    //       ptr_res = res.begin();
-    //       ptr_alt = ptr_res;
-    //       ptr_res += expected_length;
-    //       for(;ptr_alt != ptr_res; ptr_alt++){
-    //         *ptr_alt = na_value;
-    //       }
-    //       ptr_res = res.begin();
-    //       std::vector<int64_t> sub_idx(0);
-    //       for(int64_t file_ii = 1; file_ii <= nfiles; file_ii++, chunk_start += expect_nrows, chunk_end += expect_nrows ){
-    //         partition_path = rootPath + std::to_string(file_ii) + ".fst";
-    //         R_CheckUserInterrupt();
-    //
-    //         int64_t sub_count = 0;
-    //         for(ptr_sel = sel.begin(), ptr_indices = indices.begin();
-    //             ptr_sel != sel.end(); ptr_sel++, ptr_indices++ ){
-    //           // na is negative so falls in this range
-    //           if(*ptr_indices <= chunk_start || *ptr_indices > chunk_end || *ptr_indices == NA_REAL || *ptr_indices == NA_INTEGER64){
-    //             *ptr_sel = false;
-    //           } else {
-    //             *ptr_sel = true;
-    //             sub_count++;
-    //           }
-    //         }
-    //
-    //         // if this chunk is not used, just skip;
-    //         if( sub_count == 0 ){ continue; }
-    //
-    //         // get sub index for this chunk, note no NA is included
-    //         sub_idx.resize(sub_count);
-    //         std::vector<int64_t>::iterator ptr_sub_idx = sub_idx.begin();
-    //         reader_start = -1;
-    //         reader_end = -1;
-    //
-    //         for(ptr_sel = sel.begin(), ptr_indices = indices.begin();
-    //             ptr_sub_idx != sub_idx.end() && ptr_indices != indices.end() && ptr_sel != sel.end();
-    //             ptr_indices++, ptr_sel++){
-    //           if(*ptr_sel){
-    //             *ptr_sub_idx = *ptr_indices;
-    //             if(reader_start > *ptr_indices || reader_start == -1){
-    //               reader_start = (int)(*ptr_indices);
-    //             }
-    //             if(reader_end < *ptr_indices){
-    //               reader_end = (int)(*ptr_indices);
-    //             }
-    //             // Rcout << *ptr_sub_idx << " ";
-    //             ptr_sub_idx++;
-    //           }
-    //         }
-    //
-    //         reader_start -= chunk_start;
-    //         reader_end -= chunk_start;
-    //         // Rcout << "\n" << std::to_string(reader_start) << " " << std::to_string(reader_end) << "\n";
-    //
-    //         // read to buffer
-    //         if( !checkFstMeta(partition_path, expect_nrows, cnames) ){
-    //           // this file is invalid, fill with na, but they have been set to NAs
-    //           continue;
-    //         }
-    //         // Read from fst file, abuse name "meta" a little bit
-    //         tmp = fstRetrieve(partition_path, Shield<SEXP>(wrap(cnames)),
-    //                           Shield<SEXP>(wrap(reader_start)), Shield<SEXP>(wrap(reader_end)));
-    //         tmp = VECTOR_ELT(tmp, 2);
-    //
-    //         if(is_complex){
-    //           // try to reuse buffer, but if not reusable, create new one
-    //           if(buffer.size() != reader_end - reader_start + 1){
-    //             buffer = static_cast<Vector<RTYPE>>(no_init(reader_end - reader_start + 1));
-    //           }
-    //           setReIm(static_cast<ComplexVector>(buffer), as<NumericVector>(VECTOR_ELT(tmp, 0)), true);
-    //           setReIm(static_cast<ComplexVector>(buffer), as<NumericVector>(VECTOR_ELT(tmp, 1)), false);
-    //         } else {
-    //
-    //           SEXP tmp_var = VECTOR_ELT(tmp, 0);
-    //           if(TYPEOF(tmp_var) != RTYPE){
-    //             tmp_var = PROTECT(Rf_coerceVector(tmp_var, RTYPE));
-    //             buffer = as<Vector<RTYPE>>(tmp_var);
-    //             UNPROTECT(1);
-    //           } else {
-    //             buffer = as<Vector<RTYPE>>(tmp_var);
-    //           }
-    //
-    //         }
-    //
-    //         ptr_res = res.begin();
-    //         ptr_alt = ptr_res + expected_length;
-    //         // Skip first bump_start elements as they are all set
-    //         ptr_res = ptr_res + bump_start;
-    //         ptr_sub_idx = sub_idx.begin();
-    //         ptr_sel = sel.begin() + bump_start;
-    //         ptr_indices = indices.begin()+ bump_start;
-    //         enable_bump = false; // FIXME?
-    //
-    //         while(ptr_sel != sel.end() && ptr_sub_idx != sub_idx.end() && ptr_res != ptr_alt){
-    //
-    //           if(*ptr_sel){
-    //             *ptr_res = *(buffer.begin() + (*ptr_sub_idx++ - chunk_start - reader_start));
-    //             *ptr_indices = NA_INTEGER64;
-    //             if( enable_bump ){
-    //               bump_start++;
-    //             }
-    //           } else if(enable_bump && (*ptr_indices == NA_REAL || *ptr_indices == NA_INTEGER64)){
-    //             bump_start++;
-    //           } else {
-    //             enable_bump = false;
-    //           }
-    //           // Rcout << bump_start << " ";
-    //           ptr_sel++;
-    //           ptr_res++;
-    //           ptr_indices++;
-    //         }
-    //
-    //       }
-    //
-    //     }
-    //     tok("E subsetFMtemplate - LASUBMOD_SINGLE");
-    //
   } else if (subset_mode == LASUBMOD_MULTI) {
     // case: subset_mode == 0, x[i,j,k,l,...], and ijk might be R missing value
     tok("S subsetFMtemplate - LASUBMOD_MULTI");
@@ -322,11 +180,11 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
     int64_t buffer_xlen;
     if(block_indexed) {
       buffer_xlen = block_schedule_end - block_schedule_start + 1;
-      if(buffer_xlen > getFArrayBlockSize(2)){
-        buffer_xlen = getFArrayBlockSize(2);
+      if(buffer_xlen * element_size > getFArrayBlockSize(2)){
+        buffer_xlen = getFArrayBlockSize(2) / element_size;
       }
     } else {
-      buffer_xlen = getFArrayBlockSize(2);
+      buffer_xlen = getFArrayBlockSize(2) / element_size;
     }
 
 #pragma omp parallel num_threads(nThread) private(chunk_end, chunk_start, reader_start, reader_end)
@@ -380,7 +238,7 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
         if(fcon.isValid()) {
           try {
             file_len = cpp_fileLength(partition_path_private);
-            if(file_len == (expect_nrows * element_size)) {
+            if(file_len == expected_partition_bytes ) {
               // This is a valid connection, read data here!!!!!!!!
 
               // read elements as this will put the file to warm start
@@ -414,7 +272,7 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
                 if( block_indexed ){
 
                   // load buffer
-                  if(file_len < (reader_start-1 + buffer_xlen) * element_size){
+                  if(expected_partition_bytes < (reader_start-1 + buffer_xlen) * element_size){
                     // cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1, true);
                     cpp_readBin<T>(fcon.conn, buffer, buffer_xlen, reader_start-1, true);
                   } else {
@@ -434,20 +292,21 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
                       if(sub_index < 0 || sub_index >= buffer_xlen){
                         // need to load new data
                         buffer_pos += sub_index;
-                        if(file_len < (reader_start-1 + buffer_xlen + buffer_pos) * element_size){
+                        if(expected_partition_bytes < (reader_start-1 + buffer_xlen + buffer_pos) * element_size){
                           // cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, true);
                           cpp_readBin<T>(fcon.conn, buffer, buffer_xlen, reader_start-1+buffer_pos, true);
                         } else {
                           // cpp_readBin(input, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, false);
                           cpp_readBin<T>(fcon.conn, buffer, buffer_xlen, reader_start-1+buffer_pos, false);
                         }
+                        sub_index = 0;
                       }
                       *ptr_res_private++ = *(buffer + sub_index);
                     }
                   }
                 } else {
                   // load buffer
-                  if(file_len < (reader_start-1 + buffer_xlen) * element_size){
+                  if(expected_partition_bytes < (reader_start-1 + buffer_xlen) * element_size){
                     // cpp_readBin(fcon.conn, (char*) buffer, buffer_xlen, element_size, reader_start-1, true);
                     cpp_readBin<T>(fcon.conn, buffer, buffer_xlen, reader_start-1, true);
                   } else {
@@ -515,13 +374,14 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
                       if(sub_index < 0 || sub_index >= buffer_xlen){
                         // need to load new data
                         buffer_pos += sub_index;
-                        if(file_len < (reader_start-1 + buffer_xlen + buffer_pos) * element_size){
+                        if(expected_partition_bytes < (reader_start-1 + buffer_xlen + buffer_pos) * element_size){
                           // cpp_readBin(fcon.conn, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, true);
                           cpp_readBin<T>(fcon.conn, buffer, buffer_xlen, reader_start-1+buffer_pos, true);
                         } else {
                           // cpp_readBin(fcon.conn, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, false);
                           cpp_readBin<T>(fcon.conn, buffer, buffer_xlen, reader_start-1+buffer_pos, false);
                         }
+                        sub_index = 0;
                       }
 
                       *ptr_res_private++ = *(buffer + sub_index);
@@ -530,6 +390,7 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
                   }
 
                 }
+
               }
 
               // Finished reading !!!!!!!!!
@@ -629,7 +490,9 @@ SEXP subsetFM(const std::string& rootPath, SEXP listOrEnv, const std::vector<int
 # devtools::load_all(); f <- normalizePath('~/Desktop/filearray_data/'); subsetFM(f, list(1,1,1,1), c(287,200,601,1), 14L, NULL, TRUE)
 
 devtools::load_all();
-filearray <- filearray('~/Desktop/filearray_data/', dim = dim(flazy))
+filea <- filearray('~/Desktop/filearray_data/')
+a <- readBin(filea$get_partition_fpath(1), 'double', filea$partition_length, size = 8)
+b <- filea[,,,1]
 sa <- sample(200)
 range(filearray[sa,sa,sa,53] - flazy[sa,sa,sa,53])
 

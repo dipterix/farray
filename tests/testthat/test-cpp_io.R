@@ -108,5 +108,5 @@ test_that("Saver", {
   expect_error({
     system.time({x[idx, idx, , ] <- a[idx, idx, , ]})
   })
-
+  setFArrayBlockSize(-1,-1,-1)
 })
