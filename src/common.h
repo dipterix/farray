@@ -35,7 +35,7 @@ using namespace Rcpp;
 #undef FARRAY_BUFFERSIZE_LIMIT
 #endif
 
-#define FARRAY_BUFFERSIZE_LIMIT 180224
+#define FARRAY_BUFFERSIZE_LIMIT 1572864
 
 
 #ifdef FARRAY_DEBUG
