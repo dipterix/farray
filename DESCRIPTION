@@ -19,12 +19,12 @@ SystemRequirements:
 LinkingTo: 
     Rcpp
 Imports: 
+    methods,
     stats,
     Rcpp,
     filematrix,
     R6 (>= 2.5.0),
     yaml (>= 2.2.1),
-    methods (>= 4.0.3),
     future (>= 1.20.1)
 Suggests: 
     dipsaus (>= 0.1.1),
