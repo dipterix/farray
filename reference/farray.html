@@ -273,15 +273,15 @@ fastest, then <code>x[,i,]</code>, then <code>x[i,,]</code>.</p>
 #&gt; [2,]    2    4    6</div><div class='input'>
 <span class='co'># Partition file path (total 4 partitions)</span>
 <span class='va'>arr</span><span class='op'>$</span><span class='fu'>get_partition_fpath</span><span class='op'>(</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; [1] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpHBWnMl/file80130876c92/1.bmat"
-#&gt; [2] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpHBWnMl/file80130876c92/2.bmat"
-#&gt; [3] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpHBWnMl/file80130876c92/3.bmat"
-#&gt; [4] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpHBWnMl/file80130876c92/4.bmat"</div><div class='input'>
+</div><div class='output co'>#&gt; [1] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/Rtmp8fOfpk/file81078735b0d/1.bmat"
+#&gt; [2] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/Rtmp8fOfpk/file81078735b0d/2.bmat"
+#&gt; [3] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/Rtmp8fOfpk/file81078735b0d/3.bmat"
+#&gt; [4] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/Rtmp8fOfpk/file81078735b0d/4.bmat"</div><div class='input'>
 <span class='co'># Removing array doesn't clear the data</span>
 <span class='fu'><a href='https://rdrr.io/r/base/rm.html'>rm</a></span><span class='op'>(</span><span class='va'>arr</span><span class='op'>)</span>; <span class='fu'><a href='https://rdrr.io/r/base/gc.html'>gc</a></span><span class='op'>(</span><span class='op'>)</span>
 </div><div class='output co'>#&gt;           used (Mb) gc trigger (Mb) limit (Mb) max used (Mb)
-#&gt; Ncells  959883 51.3    1768254 94.5         NA  1768254 94.5
-#&gt; Vcells 1799115 13.8    8388608 64.0      16384  2627363 20.1</div><div class='input'>
+#&gt; Ncells  966959 51.7    1755370 93.8         NA  1755370 93.8
+#&gt; Vcells 1814988 13.9    8388608 64.0      16384  2634183 20.1</div><div class='input'>
 <span class='co'># ---------------- Case 2: Load from existing directory ----------------</span>
 <span class='co'># Load from existing path, no need to specify other params</span>
 <span class='va'>arr</span> <span class='op'>&lt;-</span> <span class='fu'>farray</span><span class='op'>(</span><span class='va'>path</span>, read_only <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
