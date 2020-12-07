@@ -1,12 +1,12 @@
 
 #' Generate partition summary statistics for array objects along the last
 #' dimension
-#' @param x an array or \code{farray}
-#' @param na.rm whether to remove \code{NA} when calculating summary statistics
+#' @param x an array or `farray`
+#' @param na.rm whether to remove `NA` when calculating summary statistics
 #' @param ... passed to other methods or ignored
-#' @return A data frame with the following possible columns: \code{Min},
-#' \code{Max}, \code{Mean}, \code{Standard Deviation}, \code{NAs} (total number
-#'  of \code{NA}), and \code{Length}.
+#' @return A data frame with the following possible columns: `Min`,
+#' `Max`, `Mean`, `Standard Deviation`, `NAs` (total number
+#'  of `NA`), and `Length`.
 #' @name partition_table
 #' @examples
 #'
@@ -57,19 +57,19 @@ partition_table.AbstractFArray <- function(x, na.rm = FALSE, ...){
 
 #' Apply function along the last dimension of an array and aggregate the results
 #' @name partition_map
-#' @param x R array or \code{farray}
+#' @param x R array or `farray`
 #' @param map_fun function that takes in a slice of array and an optional
 #' argument indicating current partition number
 #' @param reduce function that accept a list of results returned by
-#' \code{map_fun}, can be missing
+#' `map_fun`, can be missing
 #' @param partitions integers of partitions, i.e. the slices of array to be
 #' applied to, can be missing. If missing, then applies to all partitions
 #' @param ... internally used
-#' @return If \code{reduce} is missing, returns a list of results. Each result
-#' is returned by \code{map_fun}, and the total length equals to number of
-#' partitions mapped. If \code{reduce} is a function, that list of results will
-#' be passed to \code{reduce} and \code{partition_map} returns the results
-#' generated from \code{reduce}.
+#' @return If `reduce` is missing, returns a list of results. Each result
+#' is returned by `map_fun`, and the total length equals to number of
+#' partitions mapped. If `reduce` is a function, that list of results will
+#' be passed to `reduce` and `partition_map` returns the results
+#' generated from `reduce`.
 #' @examples
 #'
 #' # -------------------------- Ordinary R array ---------------------------
@@ -182,26 +182,26 @@ partition_map.AbstractFArray <- function(x, map_fun, reduce, partitions, further
 
 
 #' Apply functions to all partitions, but small chunks each time
-#' @seealso \code{\link{partition_map}}
-#' @param x a \code{farray} or R array
+#' @seealso [partition_map()]
+#' @param x a `farray` or R array
 #' @param map_fun function to apply to each chunk
-#' @param reduce similar to \code{reduce} in \code{\link{partition_map}}
+#' @param reduce similar to `reduce` in [partition_map()]
 #' @param max_nchunks maximum number of chunks. If number of chunks is too
-#' large, then \code{chunk_size} will be re-calculated.
-#' @param chunk_size integer chunk size. If \code{chunk_size} is too small, it
+#' large, then `chunk_size` will be re-calculated.
+#' @param chunk_size integer chunk size. If `chunk_size` is too small, it
 #' will be ignored
 #' @param ... ignored or passed to other methods
-#' @return If \code{reduce} is missing, returns a list of results. Each result
-#' is returned by \code{map_fun}, and the total length equals to number of
-#' chunks mapped. If \code{reduce} is a function, that list of results will
-#' be passed to \code{reduce} and \code{chunk_map} returns the results
-#' generated from \code{reduce}.
-#' @details The difference between \code{chunk_map} and
-#' \code{partition_map} is the margin or direction to apply mapping
-#' functions. In \code{partition_map}, mapping function is applied to
-#' each partition. If \code{x} is a matrix, this means applying to each column.
-#' \code{chunk_map} generate small chunks along all dimensions except the last,
-#' and apply mapping functions to each chunks. If \code{x} is a matrix, it
+#' @return If `reduce` is missing, returns a list of results. Each result
+#' is returned by `map_fun`, and the total length equals to number of
+#' chunks mapped. If `reduce` is a function, that list of results will
+#' be passed to `reduce` and `chunk_map` returns the results
+#' generated from `reduce`.
+#' @details The difference between `chunk_map` and
+#' `partition_map` is the margin or direction to apply mapping
+#' functions. In `partition_map`, mapping function is applied to
+#' each partition. If `x` is a matrix, this means applying to each column.
+#' `chunk_map` generate small chunks along all dimensions except the last,
+#' and apply mapping functions to each chunks. If `x` is a matrix, it
 #' make chunks along rows and apply mapping functions along rows.
 #' @examples
 #'

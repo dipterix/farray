@@ -1,7 +1,7 @@
 #' @noRd
-#' @title Internal Class definition for \code{FileArray}
+#' @title Internal Class definition for `FileArray`
 #' @author Zhengjia Wang
-#' @description Internal class definition of \code{'farray'} objects
+#' @description Internal class definition of `'farray'` objects
 FileArray <- R6::R6Class(
   classname = "FileArray",
   portable = TRUE,

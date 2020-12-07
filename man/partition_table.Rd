@@ -22,8 +22,8 @@ partition_table(x, na.rm = FALSE, ...)
 }
 \value{
 A data frame with the following possible columns: \code{Min},
-\code{Max}, \code{Mean}, \code{Standard Deviation}, \code{NAs} (total number
- of \code{NA}), and \code{Length}.
+\code{Max}, \code{Mean}, \verb{Standard Deviation}, \code{NAs} (total number
+of \code{NA}), and \code{Length}.
 }
 \description{
 Generate partition summary statistics for array objects along the last

@@ -14,17 +14,17 @@
 }
 
 
-#' Schedule parallel processes for \code{LazyArray}
-#' @description Enable parallel processing, need \code{dipsaus} to be installed.
-#' For \code{"callr"} strategy, please also install \code{future.callr}.
+#' Schedule parallel processes for `LazyArray`
+#' @description Enable parallel processing, need `dipsaus` to be installed.
+#' For `"callr"` strategy, please also install `future.callr`.
 #' @param enabled whether multiple-process strategy is enabled
-#' @param strategy strategies to apply, see \code{\link[future]{plan}} for
-#' some of the details. For \code{"callr"} plan, please install package
+#' @param strategy strategies to apply, see [future::plan()] for
+#' some of the details. For `"callr"` plan, please install package
 #' @param workers number of 'CPU' cores to use.
-#' \code{future.callr}.
-#' @param workers positive integer or \code{"auto"}, number of 'CPU' to use.
-#' The default value is \code{"auto"}, i.e. \code{future::availableCores()}
-#' @param ... Further passed to \code{\link[future]{plan}}
+#' `future.callr`.
+#' @param workers positive integer or `"auto"`, number of 'CPU' to use.
+#' The default value is `"auto"`, i.e. `future::availableCores()`
+#' @param ... Further passed to [future::plan()]
 #'
 #' @export
 farray_parallel <- function(
@@ -75,8 +75,8 @@ setOldClass(c('FileArray', 'AbstractFArray', 'R6'))
 setGeneric("typeof")
 
 
-#' Type of \code{LazyArray}
-#' @param x a \code{LazyArray} or an R object
+#' Type of `LazyArray`
+#' @param x a `LazyArray` or an R object
 #' @return The type of data stored in the input
 #' @exportMethod typeof
 setMethod("typeof", signature(x="AbstractFArray"), function(x){
@@ -88,11 +88,11 @@ setGeneric("crossprod")
 # setGeneric("tcrossprod")
 
 #' Matrix Crossproduct
-#' @param x a \code{LazyArray} or an R matrix
-#' @param y \code{NULL} or matrix
+#' @param x a `LazyArray` or an R matrix
+#' @param y `NULL` or matrix
 #' @param weights numeric vector used as weight
 #' @param ... passed to further methods
-#' @return Matrix of cross product if data is small, or \code{LazyMatrix} if
+#' @return Matrix of cross product if data is small, or `LazyMatrix` if
 #' matrix is too large
 #' @name crossprod
 #'

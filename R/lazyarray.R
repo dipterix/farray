@@ -1,62 +1,62 @@
-#' @title Create or load a \code{farray} instance
+#' @title Create or load a `farray` instance
 #' @author Zhengjia Wang
 #'
-#' @description Creates or load a \code{farray} that stores data on the hard
+#' @description Creates or load a `farray` that stores data on the hard
 #' disks. The data content is load on demand.
 #'
 #' @param path path to a local drive where array data should be stored
 #' @param x An R matrix or array
-#' @param dim integer vector, dimension of array, see \code{\link{dim}}
-#' @param storage_format data type, choices are \code{"double"},
-#' \code{"integer"}, \code{"character"}, and \code{"complex"}; see details
+#' @param dim integer vector, dimension of array, see [dim()]
+#' @param storage_format data type, choices are `"double"`,
+#' `"integer"`, `"character"`, and `"complex"`; see details
 #' @param read_only whether created array is read-only
-#' @param meta_name header file name, default is \code{"farray.meta"}
-#' @param ... passed into \code{farray}
+#' @param meta_name header file name, default is `"farray.meta"`
+#' @param ... passed into `farray`
 #'
-#' @return An \code{R6} class of \code{farray}. The class name is
-#' \code{FileArray}, inherits \code{AbstractFArray}.
+#' @return An `R6` class of `farray`. The class name is
+#' `FileArray`, inherits `AbstractFArray`.
 #'
-#' @details The function \code{farray()} can either create or load an array
-#' on the hard drives. When \code{path} exists as a directory, and there is
-#' a valid array instance stored, \code{farray} will ignore other parameters
-#' such as \code{storage_format}, \code{type}, and sometimes \code{dim} (see
+#' @details The function `farray()` can either create or load an array
+#' on the hard drives. When `path` exists as a directory, and there is
+#' a valid array instance stored, `farray` will ignore other parameters
+#' such as `storage_format`, `type`, and sometimes `dim` (see
 #' Section "Array Partitions"). The function will try to load the existing array
-#' given by the descriptive meta file. When \code{path} is missing or there is
+#' given by the descriptive meta file. When `path` is missing or there is
 #' no valid array files inside of the directory, then a new array will be
-#' spawned, and \code{path} will be created automatically if it is missing.
+#' spawned, and `path` will be created automatically if it is missing.
 #'
-#' The argument \code{meta_name} specifies the name of file which stores
+#' The argument `meta_name` specifies the name of file which stores
 #' all the attribute information such as the total dimension, partition size,
 #' file format, and storage format etc. There could be multiple meta files for
 #' the same array object; see Section "Array Partitions" for details.
 #'
 #' @section Performance:
 #'
-#' Type \code{filearray} stores data in its binary form "as-is" to the local
-#' drives. This format is compatible with the package \code{filematrix}.
+#' Type `filearray` stores data in its binary form "as-is" to the local
+#' drives. This format is compatible with the package `filematrix`.
 #' The data types supported are integers and double-float numbers.
 #'
-#' Type \code{fstarray} stores data in \code{fst} format defined by the
-#' package \code{fstcore} using 'ZSTD' compression technique. Unlike
-#' \code{filearray}, \code{fstarray} supports complex numbers and string
+#' Type `fstarray` stores data in `fst` format defined by the
+#' package `fstcore` using 'ZSTD' compression technique. Unlike
+#' `filearray`, `fstarray` supports complex numbers and string
 #' characters in addition to integer and double numbers.
 #'
 #' The performance on solid-state drives mounted on 'NVMe' shows
-#' \code{filearray} can reach up to 3 GB per second for reading speed and
-#' \code{fstarray} can reach up to 1 GB per second.
+#' `filearray` can reach up to 3 GB per second for reading speed and
+#' `fstarray` can reach up to 1 GB per second.
 #'
-#' By default, \code{filearray} will be used if the storage format is supported,
-#' and \code{fstarray} is the back-up option. However, if the array data is
+#' By default, `filearray` will be used if the storage format is supported,
+#' and `fstarray` is the back-up option. However, if the array data is
 #' structured or ordered, or the storage size is a major concern,
-#' \code{fstarray} might achieve a better performance because it compresses
+#' `fstarray` might achieve a better performance because it compresses
 #' data before writing to hard drive.
 #'
-#' To explicitly create file array, use the function \code{filearray()}.
-#' Similarly, use \code{fstarray()} to create \code{fst}-based array.
+#' To explicitly create file array, use the function `filearray()`.
+#' Similarly, use `fstarray()` to create `fst`-based array.
 #'
 #' @section Array Partitions:
 #'
-#' A \code{farray} partitions data in two ways: file partitions and in-file
+#' A `farray` partitions data in two ways: file partitions and in-file
 #' blocks.
 #'
 #' 1. File-level Partition:
@@ -74,8 +74,8 @@
 #' \eqn{10000 x 60}, \eqn{2000 x 300}, or \eqn{1000 x 200 x 3} as
 #' long as the total length matches. The total partitions can change to
 #' 3, 5, or 100, or any positive integer. To change the total dimension to
-#' \eqn{2400000 x 100}, you can call \code{farray} with the new dimension (
-#' see examples). Please make sure the \code{type} and \code{meta_name} are
+#' \eqn{2400000 x 100}, you can call `farray` with the new dimension (
+#' see examples). Please make sure the `type` and `meta_name` are
 #' specified.
 #'
 #' 2. In-file Blocks:
@@ -83,12 +83,12 @@
 #' Within each file, the data are stored in blocks. When reading the data, if
 #' an element within each block is used, then the whole block gets read.
 #'
-#' For \code{filearray}, the block size equals to the first margin. For
+#' For `filearray`, the block size equals to the first margin. For
 #' example, a \eqn{100 x 200 x 3} file array will have 3 file partitions,
 #' 200 blocks, each block has 100 elements
 #'
-#' As for \code{fstarray}, the lower bound of block size can be set by
-#' \code{options(farray.fstarray.blocksize=...)}. By default, this number is
+#' As for `fstarray`, the lower bound of block size can be set by
+#' `options(farray.fstarray.blocksize=...)`. By default, this number is
 #' 16,384. For a \eqn{100 x 200 x 3} array, each partition only has one block
 #' and block number if 20,000.
 #'
@@ -99,8 +99,8 @@
 #' This is because indexing along the last margin is the fastest, and indexing
 #' along the first margin is the slowest.
 #'
-#' If \code{x} has \eqn{200 x 200 x 200} dimension, \code{x[,,i]} is the
-#' fastest, then \code{x[,i,]}, then \code{x[i,,]}.
+#' If `x` has \eqn{200 x 200 x 200} dimension, `x[,,i]` is the
+#' fastest, then `x[,i,]`, then `x[i,,]`.
 #'
 #' @examples
 #'

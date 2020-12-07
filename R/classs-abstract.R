@@ -1,7 +1,7 @@
 #' @noRd
-#' @title Internal Class definition for \code{AbstractFArray}
+#' @title Internal Class definition for `AbstractFArray`
 #' @author Zhengjia Wang
-#' @description Internal class definition of \code{'farray'} objects
+#' @description Internal class definition of `'farray'` objects
 AbstractFArray <- R6::R6Class(
   classname = "AbstractFArray",
   portable = TRUE,

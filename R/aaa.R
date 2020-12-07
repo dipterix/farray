@@ -11,7 +11,7 @@
 #' @useDynLib farray, .registration = TRUE
 NULL
 
-#' Check if Package \code{'dipsaus'} has been installed
+#' Check if Package `'dipsaus'` has been installed
 #' @export
 has_dipsaus <- function(){
   system.file('', package = 'dipsaus') != ''
@@ -28,10 +28,10 @@ import_from <- function(name, default = NULL, package) {
   }
 }
 
-#' @title Set Number of Threads for \code{'farray'}
+#' @title Set Number of Threads for `'farray'`
 #' @description Set number of threads used by 'OpenMP'
-#' @param nr_of_threads number of CPU cores to use, or \code{NULL} to
-#' stay unchanged, default is \code{getOption('farray.nthreads')}
+#' @param nr_of_threads number of CPU cores to use, or `NULL` to
+#' stay unchanged, default is `getOption('farray.nthreads')`
 #' @param reset_after_fork whether to reset after forked process
 #' @param max whether return maximum available threads
 #' @return Number of cores currently used.
@@ -71,15 +71,15 @@ rand_string <- function(length = 50){
 #' @author Zhengjia Wang
 #' @description Remove the files containing array data once no
 #' 'farray' instance is using the folder. Require
-#' installation of \code{dipsaus} package (at least version 0.0.8).
+#' installation of `dipsaus` package (at least version 0.0.8).
 #' @param x 'farray' instance
-#' @param onexit passed to \code{\link{reg.finalizer}}
+#' @param onexit passed to [reg.finalizer()]
 #'
-#' @details \code{auto_clear_farray} attempts to remove the entire folder
+#' @details `auto_clear_farray` attempts to remove the entire folder
 #' containing array data. However, if some files are not created by the
 #' array, only partition data and meta file will be removed, all the
 #' artifacts will remain and warning will be displayed. One exception is
-#' if all files left in the array directory are \code{*.meta} files,
+#' if all files left in the array directory are `*.meta` files,
 #' all these meta files will be removed along with the folder.
 #'
 #' @examples

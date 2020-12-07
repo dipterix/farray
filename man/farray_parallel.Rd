@@ -13,7 +13,7 @@ farray_parallel(
 )
 }
 \arguments{
-\item{strategy}{strategies to apply, see \code{\link[future]{plan}} for
+\item{strategy}{strategies to apply, see \code{\link[future:plan]{future::plan()}} for
 some of the details. For \code{"callr"} plan, please install package}
 
 \item{enabled}{whether multiple-process strategy is enabled}
@@ -21,7 +21,7 @@ some of the details. For \code{"callr"} plan, please install package}
 \item{workers}{positive integer or \code{"auto"}, number of 'CPU' to use.
 The default value is \code{"auto"}, i.e. \code{future::availableCores()}}
 
-\item{...}{Further passed to \code{\link[future]{plan}}}
+\item{...}{Further passed to \code{\link[future:plan]{future::plan()}}}
 }
 \description{
 Enable parallel processing, need \code{dipsaus} to be installed.

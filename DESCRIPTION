@@ -7,8 +7,8 @@ Authors@R: c(
     person("Zhengjia", "Wang", email = "dipterix.wang@gmail.com", role = c("aut", "cre", "cph"), comment = c(ORCID = "0000-0001-5629-1116")),
     person("Meng", "Li", email = "meng@rice.edu", role = c("aut"), comment = c(ORCID = "0000-0003-2123-2444"))
     )
-Description: Read large out-of-memory arrays in multi-threadeds. It allows 
-    to store and load extremely large data on demand within seconds
+Description: Read large out-of-memory arrays using multi-threads. It allows 
+    to index and load gigabyte-level data on demand in seconds,
     with very small memory overheads.
 License: LGPL (>= 3)
 Encoding: UTF-8
@@ -29,7 +29,10 @@ Imports:
 Suggests: 
     dipsaus (>= 0.1.1),
     future.callr,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    spelling,
+    lifecycle
 URL: https://github.com/dipterix/farray
 BugReports: https://github.com/dipterix/farray/issues
 Config/testthat/edition: 3
+Roxygen: list(markdown = TRUE)

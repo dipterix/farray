@@ -9,7 +9,7 @@ auto_clear_farray(x, onexit = FALSE)
 \arguments{
 \item{x}{'farray' instance}
 
-\item{onexit}{passed to \code{\link{reg.finalizer}}}
+\item{onexit}{passed to \code{\link[=reg.finalizer]{reg.finalizer()}}}
 }
 \description{
 Remove the files containing array data once no
@@ -21,7 +21,7 @@ installation of \code{dipsaus} package (at least version 0.0.8).
 containing array data. However, if some files are not created by the
 array, only partition data and meta file will be removed, all the
 artifacts will remain and warning will be displayed. One exception is
-if all files left in the array directory are \code{*.meta} files,
+if all files left in the array directory are \verb{*.meta} files,
 all these meta files will be removed along with the folder.
 }
 \examples{

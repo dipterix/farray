@@ -11,7 +11,7 @@ chunk_map(x, map_fun, reduce, max_nchunks, chunk_size, ...)
 
 \item{map_fun}{function to apply to each chunk}
 
-\item{reduce}{similar to \code{reduce} in \code{\link{partition_map}}}
+\item{reduce}{similar to \code{reduce} in \code{\link[=partition_map]{partition_map()}}}
 
 \item{max_nchunks}{maximum number of chunks. If number of chunks is too
 large, then \code{chunk_size} will be re-calculated.}
@@ -61,5 +61,5 @@ colMeans(x[])
 
 }
 \seealso{
-\code{\link{partition_map}}
+\code{\link[=partition_map]{partition_map()}}
 }

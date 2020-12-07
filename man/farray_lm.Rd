@@ -17,7 +17,7 @@ farray_lm(
 )
 }
 \arguments{
-\item{formula}{an object of class \code{\link[stats]{formula}}. For variable
+\item{formula}{an object of class \code{\link[stats:formula]{stats::formula()}}. For variable
 names to be used, see 'Details'}
 
 \item{data}{a \code{farray} object}
@@ -25,12 +25,12 @@ names to be used, see 'Details'}
 \item{fitted}{whether to calculate fitted data and residuals. This may
 take time and memory if data is large}
 
-\item{weights, offset, contrasts, na.action}{see \code{\link[stats]{lm}}}
+\item{weights, offset, contrasts, na.action}{see \code{\link[stats:lm]{stats::lm()}}}
 
 \item{qr.tol}{the tolerance for detecting linear dependencies in the
-partitions of \code{data}; see \code{\link{qr}}}
+partitions of \code{data}; see \code{\link[=qr]{qr()}}}
 
-\item{...}{passed to \code{\link{chunk_map}}}
+\item{...}{passed to \code{\link[=chunk_map]{chunk_map()}}}
 }
 \value{
 An object of class \code{c("farray_lm", "lm")} or for multiple

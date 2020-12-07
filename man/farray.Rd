@@ -30,7 +30,7 @@ as.farray(x, path, ...)
 \arguments{
 \item{path}{path to a local drive where array data should be stored}
 
-\item{dim}{integer vector, dimension of array, see \code{\link{dim}}}
+\item{dim}{integer vector, dimension of array, see \code{\link[=dim]{dim()}}}
 
 \item{read_only}{whether created array is read-only}
 
@@ -97,8 +97,9 @@ Similarly, use \code{fstarray()} to create \code{fst}-based array.
 
 A \code{farray} partitions data in two ways: file partitions and in-file
 blocks.
-
-1. File-level Partition:
+\enumerate{
+\item File-level Partition:
+}
 
 The number of file partitions matches with the last array margin.
 Given a \eqn{100 x 200 x 30 x 4} array, there will be 4 partitions, each
@@ -116,8 +117,9 @@ long as the total length matches. The total partitions can change to
 \eqn{2400000 x 100}, you can call \code{farray} with the new dimension (
 see examples). Please make sure the \code{type} and \code{meta_name} are
 specified.
-
-2. In-file Blocks:
+\enumerate{
+\item In-file Blocks:
+}
 
 Within each file, the data are stored in blocks. When reading the data, if
 an element within each block is used, then the whole block gets read.

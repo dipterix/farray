@@ -50,24 +50,24 @@ sub_lm_model <- function(formula, data, weights = NULL, offset = NULL,
 }
 
 
-#' Fitting linear models using \code{farray}
-#' @param formula an object of class \code{\link[stats]{formula}}. For variable
+#' Fitting linear models using `farray`
+#' @param formula an object of class [stats::formula()]. For variable
 #' names to be used, see 'Details'
-#' @param data a \code{farray} object
+#' @param data a `farray` object
 #' @param fitted whether to calculate fitted data and residuals. This may
 #' take time and memory if data is large
 #' @param qr.tol the tolerance for detecting linear dependencies in the
-#' partitions of \code{data}; see \code{\link{qr}}
-#' @param weights,offset,contrasts,na.action see \code{\link[stats]{lm}}
-#' @param ... passed to \code{\link{chunk_map}}
-#' @return An object of class \code{c("farray_lm", "lm")} or for multiple
-#' responses of class \code{c("farray_lm", "mlm")}.
+#' partitions of `data`; see [qr()]
+#' @param weights,offset,contrasts,na.action see [stats::lm()]
+#' @param ... passed to [chunk_map()]
+#' @return An object of class `c("farray_lm", "lm")` or for multiple
+#' responses of class `c("farray_lm", "mlm")`.
 #' @details The array will be reshaped to a matrix first before fitting the
 #' linear models. A \eqn{100 x 20 x 5} array will be reshaped to a
 #' \eqn{2000 x 5} file matrix.
-#' The variables are the partitions of the array. If \code{dimnames}
+#' The variables are the partitions of the array. If `dimnames`
 #' are set for the last margin index, then those will be used as variable
-#' names, otherwise \code{farray_lm} automatically assign
+#' names, otherwise `farray_lm` automatically assign
 #' \eqn{"V1", "V2", "V3", ...} as each partition names.
 #'
 #' @examples
