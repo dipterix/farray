@@ -326,7 +326,7 @@ ParsedIndex::ParsedIndex(const SEXP listOrEnv, const std::vector<int64_t>& dim, 
   int64_t di;
   NumericVector sidx;
   NumericVector neg_sidx;
-  SEXP first_el;
+  SEXP first_el = R_MissingArg;
   bool first_error = false;
 
   for(; idx_size < sliceIdx.size(); idx_size++ ){

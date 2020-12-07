@@ -6,6 +6,11 @@
 #include <pthread.h>
 #endif
 
+static int farrayThreads = 0;
+
+// stores n threads when fork occurs
+static bool detectFork = false;
+static int reset_forked = true;
 
 int getFArrayThread(bool max){
 #ifdef _OPENMP

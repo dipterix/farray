@@ -15,11 +15,7 @@
 
 #include <Rcpp.h>
 
-static int farrayThreads = 0;
 
-// stores n threads when fork occurs
-static bool detectFork = false;
-static int reset_forked = true;
 
 
 // [[Rcpp::export]]

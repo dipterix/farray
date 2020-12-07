@@ -77,7 +77,6 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
   // FILE* input = NULL;
 
 #pragma omp for schedule(static, 1) nowait
-{
     for(int64_t file_ii = 1; file_ii <= nfiles; file_ii++ ){
 
       partition_path_private = rootPath + std::to_string(file_ii) + ".bmat";
@@ -119,7 +118,7 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
       }
 
     }
-} // end omp for
+ // end omp for
 } // end omp
 
     res.attr("dim") = Shield<SEXP>(wrap(target_dimension));
@@ -208,8 +207,7 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
   // for non-indexed array
   int64_t mod, rest, sub_index, subblock_dim_ii, tmp;
 
-#pragma omp for collapse(2) schedule(static, 1) nowait
-{
+#pragma omp for schedule(static, 1) collapse(2) nowait
   for(int64_t li = 0; li < partition_index.size(); li++){
     for(int64_t schedule_ii = 0; schedule_ii < total_schedules; schedule_ii++){
 
@@ -420,7 +418,7 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
     }
   }
 
-} // end omp parallel num_threads(nThread)
+ // end omp parallel num_threads(nThread)
 
 // if(fileio_error){
 //   warning("Error while reading partition file(s)");
@@ -432,7 +430,7 @@ SEXP subsetFMtemplate(const std::string& rootPath, const std::vector<int64_t>& d
 // make sure pointer is correct
 // ptr_res += block_size;
 
-    }
+}
 
     res.attr("dim") = wrap(target_dimension);
 

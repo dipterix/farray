@@ -1,19 +1,24 @@
 Package: farray
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Fast File-Based Out-of-Memory Array
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Language: en-US
+Author@R: c(
+    person("Zhengjia", "Wang", email = "dipterix.wang@gmail.com", role = c("aut", "cre", "cph"), comment = c(ORCID = "0000-0001-5629-1116")),
+    person("Meng", "Li", email = "meng@rice.edu", role = c("aut"), comment = c(ORCID = "0000-0003-2123-2444"))
+    )
+Description: Read large out-of-memory arrays in multi-threadeds. It allows 
+    to store and load extremely large data on demand within seconds
+    with very small memory overheads.
+License: LGPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
+SystemRequirements: 
+    C++11
 LinkingTo: 
     Rcpp
 Imports: 
-    utils,
     stats,
     Rcpp,
     filematrix,
@@ -23,5 +28,8 @@ Imports:
     future (>= 1.20.1)
 Suggests: 
     dipsaus (>= 0.1.1),
+    future.callr,
     testthat (>= 3.0.0)
+URL: https://github.com/dipterix/farray
+BugReports: https://github.com/dipterix/farray/issues
 Config/testthat/edition: 3
