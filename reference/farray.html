@@ -148,7 +148,7 @@ disks. The data content is load on demand.</p>
     </tr>
     <tr>
       <th>dim</th>
-      <td><p>integer vector, dimension of array, see <code><a href='https://rdrr.io/r/base/dim.html'>dim</a></code></p></td>
+      <td><p>integer vector, dimension of array, see <code><a href='https://rdrr.io/r/base/dim.html'>dim()</a></code></p></td>
     </tr>
     <tr>
       <th>read_only</th>
@@ -219,8 +219,10 @@ Similarly, use <code>fstarray()</code> to create <code>fst</code>-based array.</
 
 
 <p>A <code>farray</code> partitions data in two ways: file partitions and in-file
-blocks.</p>
-<p>1. File-level Partition:</p>
+blocks.</p><ol>
+<li><p>File-level Partition:</p></li>
+</ol>
+
 <p>The number of file partitions matches with the last array margin.
 Given a \(100 x 200 x 30 x 4\) array, there will be 4 partitions, each
 partition stores a slice of data containing a \(100 x 200 x 30\)
@@ -235,8 +237,10 @@ long as the total length matches. The total partitions can change to
 3, 5, or 100, or any positive integer. To change the total dimension to
 \(2400000 x 100\), you can call <code>farray</code> with the new dimension (
 see examples). Please make sure the <code>type</code> and <code>meta_name</code> are
-specified.</p>
-<p>2. In-file Blocks:</p>
+specified.</p><ol>
+<li><p>In-file Blocks:</p></li>
+</ol>
+
 <p>Within each file, the data are stored in blocks. When reading the data, if
 an element within each block is used, then the whole block gets read.</p>
 <p>For <code>filearray</code>, the block size equals to the first margin. For
@@ -278,15 +282,15 @@ fastest, then <code>x[,i,]</code>, then <code>x[i,,]</code>.</p>
 #&gt; [2,]    2    4    6</div><div class='input'>
 <span class='co'># Partition file path (total 4 partitions)</span>
 <span class='va'>arr</span><span class='op'>$</span><span class='fu'>get_partition_fpath</span><span class='op'>(</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; [1] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpLRWiiH/file77d4f10c735/1.bmat"
-#&gt; [2] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpLRWiiH/file77d4f10c735/2.bmat"
-#&gt; [3] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpLRWiiH/file77d4f10c735/3.bmat"
-#&gt; [4] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpLRWiiH/file77d4f10c735/4.bmat"</div><div class='input'>
+</div><div class='output co'>#&gt; [1] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpcdErB0/file80c30709a37/1.bmat"
+#&gt; [2] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpcdErB0/file80c30709a37/2.bmat"
+#&gt; [3] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpcdErB0/file80c30709a37/3.bmat"
+#&gt; [4] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpcdErB0/file80c30709a37/4.bmat"</div><div class='input'>
 <span class='co'># Removing array doesn't clear the data</span>
 <span class='fu'><a href='https://rdrr.io/r/base/rm.html'>rm</a></span><span class='op'>(</span><span class='va'>arr</span><span class='op'>)</span>; <span class='fu'><a href='https://rdrr.io/r/base/gc.html'>gc</a></span><span class='op'>(</span><span class='op'>)</span>
 </div><div class='output co'>#&gt;           used (Mb) gc trigger (Mb) limit (Mb) max used (Mb)
-#&gt; Ncells  968146 51.8    1775615 94.9         NA  1775615 94.9
-#&gt; Vcells 1823990 14.0    8388608 64.0      16384  2668421 20.4</div><div class='input'>
+#&gt; Ncells  968668 51.8    1777140   95         NA  1777140 95.0
+#&gt; Vcells 1824727 14.0    8388608   64      16384  2712812 20.7</div><div class='input'>
 <span class='co'># ---------------- Case 2: Load from existing directory ----------------</span>
 <span class='co'># Load from existing path, no need to specify other params</span>
 <span class='va'>arr</span> <span class='op'>&lt;-</span> <span class='fu'>farray</span><span class='op'>(</span><span class='va'>path</span>, read_only <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
