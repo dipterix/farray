@@ -3,7 +3,7 @@ Type: Package
 Title: Fast File-Based Out-of-Memory Array
 Version: 0.1.0
 Language: en-US
-Author@R: c(
+Authors@R: c(
     person("Zhengjia", "Wang", email = "dipterix.wang@gmail.com", role = c("aut", "cre", "cph"), comment = c(ORCID = "0000-0001-5629-1116")),
     person("Meng", "Li", email = "meng@rice.edu", role = c("aut"), comment = c(ORCID = "0000-0003-2123-2444"))
     )
