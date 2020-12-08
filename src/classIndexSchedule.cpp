@@ -1,5 +1,5 @@
 #include "classIndexSchedule.h"
-
+#include "openMPInterface.h"
 #include "common.h"
 #include "utils.h"
 using namespace Rcpp;
@@ -56,6 +56,9 @@ ScheduledIndex::ScheduledIndex(SEXP locations, const std::vector<int64_t>& dim, 
     Rf_xlength(locations) == ndims && ndims >= 2,
     "`scheduleIndexing`: locations and dim have different sizes or dimension size is less than 2"
   );
+
+  int64_t buffer_cap = getFArrayBlockSize(1);
+  int nThreads = getFArrayThread();
 
   // Find split
   // dim -> dim1 x dim2 length(dim1) <= length(dim)-1
@@ -116,7 +119,7 @@ ScheduledIndex::ScheduledIndex(SEXP locations, const std::vector<int64_t>& dim, 
   int64_t subblock_idx_size = block_length;
   std::vector<std::pair<std::vector<int64_t>, bool>> buffer_loc_vec;
   SEXP buffer_loc;
-  if(buffer_margin >= 2 && (block_size < getFArrayBlockSize(1) || forceSchedule)){
+  if(buffer_margin >= 2 && (block_size < (buffer_cap * nThreads) || forceSchedule)){
     buffer_expanded = true;
     buffer_loc_vec = std::vector<std::pair<std::vector<int64_t>, bool>>(buffer_margin);
     buffer_loc = PROTECT(Rf_allocVector(VECSXP, buffer_margin));
