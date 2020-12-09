@@ -188,6 +188,9 @@ SEXP subsetFMFullSubscriptIndexed(const std::string& rootPath, const std::vector
   if(buffer_xlen * element_size > getFArrayBlockSize(2)){
     buffer_xlen = getFArrayBlockSize(2) / element_size;
   }
+  if(buffer_xlen < 2){
+    buffer_xlen = 2;
+  }
 
 #pragma omp parallel num_threads(nThread) private(chunk_end, chunk_start, reader_start, reader_end)
 {
@@ -355,13 +358,15 @@ SEXP subsetFMFullSubscriptIndexed(const std::string& rootPath, const std::vector
 template <SEXPTYPE RTYPE, typename T>
 SEXP subsetFMFullSubscriptNonIndexed(const std::string& rootPath, const std::vector<int64_t>& dim,
                                   const ParsedIndex* subparsed) {
-  int nThread = getFArrayThread();
+  // int nThread = getFArrayThread();
   const std::vector<int64_t> target_dimension = subparsed->target_dimension;
   const int64_t expected_length = subparsed->expected_length;
   const std::vector<bool> negative_subscript = subparsed->negative_subscript;
   std::vector<std::pair<std::vector<int64_t>, bool>> location_indices = subparsed->location_indices;
   // create results
-  Vector<RTYPE> res = static_cast<Vector<RTYPE>>(no_init(expected_length));
+
+  auto na_value = Vector<RTYPE>::get_na();
+  Vector<RTYPE> res = Vector<RTYPE>(expected_length, na_value);
   int element_size = sizeof(T);
 
   // for blocked runs (if needed)
@@ -369,12 +374,7 @@ SEXP subsetFMFullSubscriptNonIndexed(const std::string& rootPath, const std::vec
   int64_t expect_nrows = std::accumulate(dim.begin(), dim.end()-1, INTEGER64_ONE, std::multiplies<int64_t>());
   int64_t expected_partition_bytes = expect_nrows * element_size;
   int64_t chunk_start, chunk_end;
-  int64_t reader_start, reader_end;
   std::string partition_path;
-
-  // Vector<RTYPE> buffer = Vector<RTYPE>(0);
-  // auto ptr_buffer = buffer.begin();
-  auto na_value = Vector<RTYPE>::get_na();
 
   // case: subset_mode == 0, x[i,j,k,l,...], and ijk might be R missing value
   tok("S subsetFMtemplate - LASUBMOD_MULTI");
@@ -402,8 +402,8 @@ SEXP subsetFMFullSubscriptNonIndexed(const std::string& rootPath, const std::vec
   std::vector<int64_t> block_dimension = schedule->block_dimension; // [block dim], full version
   std::vector<int64_t> block_prod_dim = schedule->block_prod_dim; // prod([1, block dim]), used to locate indices when block is too large to index
   std::vector<int64_t> block_schedule = schedule->block_schedule; // given a flattened block (full version), which indices to subset?
-  int64_t block_schedule_start = schedule->block_schedule_start;
-  int64_t block_schedule_end = schedule->block_schedule_end;      // min, max of block_schedule
+  // int64_t block_schedule_start = schedule->block_schedule_start;
+  // int64_t block_schedule_end = schedule->block_schedule_end;      // min, max of block_schedule
 
   int64_t block_length = schedule->block_length;                  // # elements in a block (full version) = prod(block_dimension)
   int64_t block_expected_length = schedule->block_expected_length;// # elements in a block (subset version) = length(block_schedule)
@@ -427,218 +427,265 @@ SEXP subsetFMFullSubscriptNonIndexed(const std::string& rootPath, const std::vec
   // }
 
   int64_t buffer_xlen = getFArrayBlockSize(2) / element_size;
+  if(buffer_xlen < 2){
+    buffer_xlen = 2;
+  }
 
-#pragma omp parallel num_threads(nThread) private(chunk_end, chunk_start, reader_start, reader_end)
-{
+// #pragma omp parallel num_threads(nThread) private(chunk_end, chunk_start, reader_start, reader_end)
+
   // private variables
   // schedule private variables
   auto ptr_res_private = res.begin();
-  auto ptr_alt_private = res.begin();
   std::string partition_path_private;
-  bool bugged = false;
   BinaryFileConn fcon = BinaryFileConn();
   // FILE* input;
   int64_t file_len;
-  int64_t lidx;
+  int64_t lidx = 1;
   T buffer[buffer_xlen];
-  T* ptr_buffer = buffer;
+  int64_t buffer_idx[buffer_xlen];
   int64_t block_number;
   std::vector<int64_t>::iterator ptr_block_schedule;
-  int64_t buffer_pos;
+  bool delayed = false;
+  int64_t buffer_pos, buffer_idx_min = expect_nrows + 1, buffer_idx_max = -1, buffer_idx_pos = 0, ii_last;
 
   // for non-indexed array
   int64_t mod, rest, sub_index, subblock_dim_ii, tmp;
 
-#pragma omp for schedule(static, 1) collapse(2) nowait
-  for(int64_t li = 0; li < partition_index.size(); li++){
-    for(int64_t schedule_ii = 0; schedule_ii < total_schedules; schedule_ii++){
+  // per buffer, per schedule index, per file
 
-      lidx = partition_index[li];
+  int64_t ii_cap = block_expected_length;
+  for(int64_t ii = 0; ii < ii_cap; ii++ ){
 
-      // block_size = block_expected_length * schedule_counts_per_part
-      // only in charge of ptr_res_private ~ ptr_res_private + block_expected_length
-      ptr_res_private = res.begin() + block_size * li + schedule_ii * block_expected_length;
+    rest = ii;
+    sub_index = 0;
+    delayed = false;
+    ii_last = 0;
+    for(int64_t di = 0; di < block_ndims; di++ ){
 
-      // Fill in NA if *ptr_last_idx is NA_REAL
-      if(lidx == NA_INTEGER64 || lidx == NA_REAL){
-        // name is messed up here,
-        // block_size = block_expected_length * schedule_counts_per_part
-        bugged = true;
-        // continue;
-      } else {
+      // block_dimension = schedule["block_dimension"]; // [block dim], full version
+      // std::vector<int64_t> block_prod_dim = schedule["block_prod_dim"]; // prod([1, block dim]), used to locate indices when block is too large to index
+      // std::vector<int64_t> block_schedule = schedule["block_schedule"]; // given a flattened block (full version), which indices to subset?
+      // int64_t block_schedule_start = schedule["block_schedule_start"];
+      // int64_t block_schedule_end = schedule["block_schedule_end"];      // min, max of block_schedule
+      //
+      // int64_t block_length = schedule["block_length"];                  // # elements in a block (full version) = prod(block_dimension)
+      // int64_t block_expected_length = schedule["block_expected_length"];// # elements in a block (subset version) = length(block_schedule)
+      //
+      // bool block_indexed = schedule["block_indexed"];                   // whether schedule_index can be trusted
+      // const List block_location
 
-        // Check is file valid?
-        partition_path_private = rootPath + std::to_string(lidx) + ".bmat";
-        // input = NULL;
-        bugged = false;
-
-        // It's possible the file cannot be opened
-        fcon.connect( partition_path_private, false );
-
-        if(fcon.isValid()) {
-          try {
-            file_len = cpp_fileLength(partition_path_private);
-            if(file_len == expected_partition_bytes ) {
-              // This is a valid connection, read data here!!!!!!!!
-
-              // read elements as this will put the file to warm start
-              //
-              chunk_start = 0;
-              chunk_end = block_length;
-
-              ptr_buffer = buffer;
-              // re-calculate index position for pointers (they are private now)
-              // ptr_res2 ~ (ptr_res2 + block_expected_length) are to write
-              // ptr_res_private = res.begin() + (block_size * li + schedule_ii * block_expected_length);
-
-              block_number = schedule_index[schedule_ii];
-
-              if(block_number == NA_INTEGER64 || !(block_schedule_start > 0 && block_schedule_start <= block_schedule_end)){
-                // fill NAs
-                ptr_alt_private = ptr_res_private + block_expected_length; // block length (subset version)
-                for(;ptr_res_private != ptr_alt_private; ptr_res_private++){
-                  *ptr_res_private = na_value;
-                }
-                // continue;
-              } else {
-                // locate where the rows are in the file
-                chunk_end = block_length * block_number;
-                chunk_start = chunk_end - block_length;
-                // int64_t subblock_min = (min subblock_idx), subblock_max = max subblock_idx;
-                reader_start = (chunk_start + block_schedule_start);
-                reader_end = (chunk_start + block_schedule_end);
-
-                //#pragma omp critical // ?
-                // load buffer
-                if(expected_partition_bytes < (reader_start-1 + buffer_xlen) * element_size){
-                  // cpp_readBin(fcon.conn, (char*) buffer, buffer_xlen, element_size, reader_start-1, true);
-                  cpp_readBin<T>(fcon.conn, buffer, buffer_xlen, reader_start-1, true);
-                } else {
-                  // cpp_readBin(fcon.conn, (char*) buffer, buffer_xlen, element_size, reader_start-1, false);
-                  cpp_readBin<T>(fcon.conn, buffer, buffer_xlen, reader_start-1, false);
-                }
-                buffer_pos = 0;
-
-                // non-indexed (usually memory too big for index), index on the fly
-
-                for(int64_t ii = 0; ii < block_expected_length; ii++ ){
-                  rest = ii;
-                  sub_index = 0;
-                  for(int64_t di = 0; di < block_ndims; di++ ){
-
-                    // block_dimension = schedule["block_dimension"]; // [block dim], full version
-                    // std::vector<int64_t> block_prod_dim = schedule["block_prod_dim"]; // prod([1, block dim]), used to locate indices when block is too large to index
-                    // std::vector<int64_t> block_schedule = schedule["block_schedule"]; // given a flattened block (full version), which indices to subset?
-                    // int64_t block_schedule_start = schedule["block_schedule_start"];
-                    // int64_t block_schedule_end = schedule["block_schedule_end"];      // min, max of block_schedule
-                    //
-                    // int64_t block_length = schedule["block_length"];                  // # elements in a block (full version) = prod(block_dimension)
-                    // int64_t block_expected_length = schedule["block_expected_length"];// # elements in a block (subset version) = length(block_schedule)
-                    //
-                    // bool block_indexed = schedule["block_indexed"];                   // whether schedule_index can be trusted
-                    // const List block_location
-
-                    if(sub_index != NA_INTEGER64 && sub_index != NA_REAL){
-                      subblock_dim_ii = *(target_dimension.begin() + di);
-                      mod = rest % subblock_dim_ii;
-                      rest = (rest - mod) / subblock_dim_ii;
+      if(sub_index != NA_INTEGER64 && sub_index != NA_REAL){
+        subblock_dim_ii = *(target_dimension.begin() + di);
+        mod = rest % subblock_dim_ii;
+        rest = (rest - mod) / subblock_dim_ii;
 
 
-                      // get di^th margin element mod
-                      // partition_subblocklocs[di][mod]
+        // get di^th margin element mod
+        // partition_subblocklocs[di][mod]
 
-                      // check this lication is empty
-                      if( std::get<1>(block_location[di]) ){
-                        // index[di], location_ii is missing
-                        tmp = mod + 1;
-                      } else {
-                        // index[di]
-                        tmp = std::get<0>(block_location[di])[mod];
-                      }
-                      // print(wrap(location_ii));
-                      // Rcout << di << " " << mod << " " << tmp << " ";
-                      // is tmp is < 1, that mean it's invalid may be remove the other one
-                      if(tmp < 1 || tmp == NA_REAL ){
-                        sub_index = NA_INTEGER64;
-                      } else if (tmp != NA_INTEGER64){
-                        // location_ii starts from 1 but we need it to starting from 0
-                        sub_index += *(block_prod_dim.begin() + di) * (tmp - 1);
-                      }
-                    }
-
-
-                  }
-                  // Rcout << block_schedule_start << " " << sub_index<< "\n";
-
-                  if( sub_index == NA_INTEGER64 ) {
-                    *ptr_res_private++ = na_value;
-                  } else {
-                    sub_index = sub_index + 1 - block_schedule_start - buffer_pos;
-
-                    if(sub_index < 0 || sub_index >= buffer_xlen){
-                      // need to load new data
-                      buffer_pos += sub_index;
-                      if(expected_partition_bytes < (reader_start-1 + buffer_xlen + buffer_pos) * element_size){
-                        // cpp_readBin(fcon.conn, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, true);
-                        cpp_readBin<T>(fcon.conn, buffer, buffer_xlen, reader_start-1+buffer_pos, true);
-                      } else {
-                        // cpp_readBin(fcon.conn, (char*) buffer, buffer_xlen, element_size, reader_start-1 + buffer_pos, false);
-                        cpp_readBin<T>(fcon.conn, buffer, buffer_xlen, reader_start-1+buffer_pos, false);
-                      }
-                      sub_index = 0;
-                    }
-
-                    *ptr_res_private++ = *(buffer + sub_index);
-                  }
-                  // Rcout << *(ptr_res + ii) << "\n";
-                }
-
-
-              }
-
-              // Finished reading !!!!!!!!!
-              bugged = false;
-            } else {
-              bugged = true;
-            }
-          } catch (...) {
-            // cannot open the partition
-            bugged = true;
-          }
-          fcon.close();
+        // check this lication is empty
+        if( std::get<1>(block_location[di]) ){
+          // index[di], location_ii is missing
+          tmp = mod + 1;
         } else {
-          // file missing, fill with NA
-          bugged = true;
+          // index[di]
+          tmp = std::get<0>(block_location[di])[mod];
+        }
+        // print(wrap(location_ii));
+        // Rcout << di << " " << mod << " " << tmp << " ";
+        // is tmp is < 1, that mean it's invalid may be remove the other one
+        if(tmp < 1 || tmp == NA_REAL ){
+          sub_index = NA_INTEGER64;
+        } else if (tmp != NA_INTEGER64){
+          // location_ii starts from 1 but we need it to starting from 0
+          sub_index += *(block_prod_dim.begin() + di) * (tmp - 1);
         }
       }
 
-      if( bugged ){
-        ptr_res_private = res.begin() + block_size * li + schedule_ii * block_expected_length;
-        // this file is invalid, fill with na
-        ptr_alt_private = ptr_res_private + block_expected_length;
-        while( ptr_alt_private != ptr_res_private ){
-          *ptr_res_private++ = na_value;
+
+    }
+    // Rcout << block_schedule_start << " " << sub_index<< "\n";
+
+    // sub_index is the index in its current block (start:0)
+    // block_schedule_start is the starting index in current schedule (start:1)
+    if(sub_index == NA_INTEGER64 || sub_index < 0) {
+      buffer_idx[buffer_idx_pos++] = NA_INTEGER64;
+    } else {
+
+      if((sub_index < buffer_idx_min && buffer_idx_max - sub_index >= buffer_xlen) ||
+         (sub_index > buffer_idx_max && sub_index - buffer_idx_min >= buffer_xlen)) {
+        delayed = true;
+      } else {
+        buffer_idx[buffer_idx_pos++] = sub_index;
+        if(sub_index < buffer_idx_min) {
+          buffer_idx_min = sub_index;
+        }
+        if(sub_index > buffer_idx_max) {
+          buffer_idx_max = sub_index;
         }
       }
     }
+    // Rcout << ii << " " << sub_index << " " << buffer_idx_pos << " " << buffer_xlen << " " << buffer_idx_min << " " << buffer_idx_max << " " << delayed << "\n";
+
+    if(delayed || buffer_idx_max - buffer_idx_min + 1 >= buffer_xlen ||
+       buffer_idx_pos >= buffer_xlen){
+      // buffer index is maximized, need to read file and assign values
+
+      if(buffer_idx_max >= buffer_idx_min){
+        for(int64_t li = 0; li < partition_index.size(); li++){
+
+          lidx = partition_index[li];
+
+          if(lidx == NA_INTEGER64 || lidx == NA_REAL){
+            continue;
+          } else {
+            partition_path_private = rootPath + std::to_string(lidx) + ".bmat";
+            // It's possible the file cannot be opened
+            fcon.connect( partition_path_private, false );
+            if(!fcon.isValid()) {
+              continue;
+            } else {
+              file_len = cpp_fileLength(partition_path_private);
+              if( file_len != expected_partition_bytes ) {
+                continue;
+              }
+            }
+          }
+
+          for(int64_t schedule_ii = 0; schedule_ii < total_schedules; schedule_ii++){
+
+            block_number = schedule_index[schedule_ii];
+            if(block_number == NA_INTEGER64 || block_number < 0){
+              continue;
+            }
+
+            // locate where the block is in the file
+            chunk_end = block_length * block_number;
+            chunk_start = chunk_end - block_length;
+
+            /**
+             * buffer starts from chunk_start + buffer_idx_min and ends at chunk_start + buffer_idx_max + 1
+             * There are max of buffer_xlen objects, need to check of chunk_start + buffer_idx_max + 1 >= expect_nrows
+             * to savely load buffers
+             */
+            if(chunk_start + buffer_idx_max + 1 >= expect_nrows) {
+              cpp_readBin<T>(fcon.conn, buffer, buffer_idx_max + 1 - buffer_idx_min, chunk_start + buffer_idx_min, true);
+            } else {
+              cpp_readBin<T>(fcon.conn, buffer, buffer_idx_max + 1 - buffer_idx_min, chunk_start + buffer_idx_min, false);
+            }
+            /**
+             * Now buffer[0] is buffer_idx_min
+             */
+            // Rcout << buffer[0] << " " << buffer_idx_pos <<"---\n";
+            ptr_res_private = res.begin() + (
+              // skip li schedules, schedule_ii blocks,
+              // if delayed, actual ii should be ii-1 as iith element has not been pushed yet, hence skip ii - buffer_idx_pos elements
+              // otherwise skip ii +1 - buffer_idx_pos elements
+              block_size * li + schedule_ii * block_expected_length + ii + 1 - buffer_idx_pos - delayed
+            );
+
+            for(buffer_pos = 0; buffer_pos < buffer_idx_pos; buffer_pos++){
+              if(*(buffer_idx + buffer_pos) != NA_INTEGER64){
+                *ptr_res_private++ = *(buffer + (*(buffer_idx + buffer_pos) - buffer_idx_min));
+              } else {
+                ptr_res_private++;
+              }
+            }
+          }
+        }
+      }
+
+
+      // reset
+      buffer_idx_min = expect_nrows + 1;
+      buffer_idx_max = -1;
+      buffer_idx_pos = 0;
+    }
+
+    if(delayed){
+      buffer_idx[buffer_idx_pos++] = sub_index;
+      if(sub_index < buffer_idx_min) {
+        buffer_idx_min = sub_index;
+      }
+      if(sub_index > buffer_idx_max) {
+        buffer_idx_max = sub_index;
+      }
+    }
+
   }
 
-  // end omp parallel num_threads(nThread)
+  if(buffer_idx_pos > 0 && (buffer_idx_max >= buffer_idx_min)) {
+    // buffer index is maximized, need to read file and assign values
 
-  // if(fileio_error){
-  //   warning("Error while reading partition file(s)");
-  // }
-  // if(input != NULL){
-  //   fclose( input );
-  // }
+    for(int64_t li = 0; li < partition_index.size(); li++){
 
-  // make sure pointer is correct
-  // ptr_res += block_size;
+      lidx = partition_index[li];
 
-}
+      if(lidx == NA_INTEGER64 || lidx == NA_REAL){
+        continue;
+      } else {
+        partition_path_private = rootPath + std::to_string(lidx) + ".bmat";
+        // It's possible the file cannot be opened
+        fcon.connect( partition_path_private, false );
+        if(!fcon.isValid()) {
+          continue;
+        } else {
+          file_len = cpp_fileLength(partition_path_private);
+          if( file_len != expected_partition_bytes ) {
+            continue;
+          }
+        }
+      }
 
-res.attr("dim") = wrap(target_dimension);
-return res;
+      for(int64_t schedule_ii = 0; schedule_ii < total_schedules; schedule_ii++){
+
+        block_number = schedule_index[schedule_ii];
+        if(block_number == NA_INTEGER64 || block_number < 0){
+          continue;
+        }
+
+        // locate where the block is in the file
+        chunk_end = block_length * block_number;
+        chunk_start = chunk_end - block_length;
+
+        /**
+         * buffer starts from chunk_start + buffer_idx_min and ends at chunk_start + buffer_idx_max + 1
+         * There are max of buffer_xlen objects, need to check of chunk_start + buffer_idx_max + 1 >= expect_nrows
+         * to savely load buffers
+         */
+        if(chunk_start + buffer_idx_max + 1 >= expect_nrows) {
+          cpp_readBin<T>(fcon.conn, buffer, buffer_idx_max + 1 - buffer_idx_min, chunk_start + buffer_idx_min, true);
+        } else {
+          cpp_readBin<T>(fcon.conn, buffer, buffer_idx_max + 1 - buffer_idx_min, chunk_start + buffer_idx_min, false);
+        }
+        /**
+         * Now buffer[0] is buffer_idx_min
+         */
+        // Rcout << buffer[0] << " " << buffer_idx_pos <<"+++\n";
+        ptr_res_private = res.begin() + (
+          // skip li schedules, schedule_ii blocks, ii_cap - buffer_idx_pos elements
+          block_size * li + schedule_ii * block_expected_length + ii_cap - buffer_idx_pos
+        );
+
+        for(buffer_pos = 0; buffer_pos < buffer_idx_pos; buffer_pos++){
+          if(*(buffer_idx + buffer_pos) != NA_INTEGER64){
+            *ptr_res_private++ = *(buffer + (*(buffer_idx + buffer_pos) - buffer_idx_min));
+          } else {
+            ptr_res_private++;
+          }
+        }
+      }
+    }
+
+    // reset
+    buffer_idx_min = expect_nrows + 1;
+    buffer_idx_max = -1;
+    buffer_idx_pos = 0;
+  }
+
+
+  res.attr("dim") = wrap(target_dimension);
+  return res;
 }
 
 SEXP subsetFMBare(const std::string& rootPath, const ParsedIndex* parsed,
