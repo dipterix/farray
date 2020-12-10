@@ -24,7 +24,7 @@ public:
     const int64_t _block_schedule_end
   );
 
-  ScheduledIndex(SEXP locations, const std::vector<int64_t>& dim, bool forceSchedule = false, int64_t hint = -1);
+  ScheduledIndex(SEXP locations, const std::vector<int64_t>& dim, int forceSchedule = 0, int64_t hint = -1);
 
   ~ScheduledIndex(){
 #ifdef FARRAY_DEBUG
@@ -117,10 +117,15 @@ Rcpp::List parseSlices(SEXP listOrEnv, const std::vector<int64_t>& dim, bool pos
 
 // parseAndScheduleBlocks = parseSlices + scheduleIndexing
 // [[Rcpp::export]]
-Rcpp::List parseAndScheduleBlocks2(SEXP sliceIdx, Rcpp::NumericVector dim, bool forceSchedule = false);
+Rcpp::List parseAndScheduleBlocks2(SEXP sliceIdx, Rcpp::NumericVector dim, int forceSchedule = 0);
 
 
-ParsedIndex* parseAndScheduleBlocks(SEXP listOrEnv, const std::vector<int64_t>& dim, bool forceSchedule = false, int64_t hint = -1);
+/*
+ * forceSchedule = 0 - auto
+ * 1 - force
+ * -1 - never
+ */
+ParsedIndex* parseAndScheduleBlocks(SEXP listOrEnv, const std::vector<int64_t>& dim, int forceSchedule = 0, int64_t hint = -1);
 
 // [[Rcpp::export]]
 SEXP reshapeOrDrop(SEXP x, SEXP reshape = R_NilValue, bool drop = false);

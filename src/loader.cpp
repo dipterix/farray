@@ -216,6 +216,7 @@ SEXP subsetFMFullSubscriptIndexed(const std::string& rootPath, const std::vector
 #pragma omp for schedule(static, 1) collapse(2) nowait
   for(int64_t li = 0; li < partition_index.size(); li++){
     for(int64_t schedule_ii = 0; schedule_ii < total_schedules; schedule_ii++){
+      // printf("%d %d\n", li, schedule_ii);
 
       lidx = partition_index[li];
 

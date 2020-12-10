@@ -54,10 +54,11 @@ R_xlen_t setFArrayBlockSize(R_xlen_t size, R_xlen_t limit, R_xlen_t buf_size){
   if( limit < 0 ) {
     BLOCKLARGE = 4194304;
   } else if ( limit > 0 ){
-    BLOCKLARGE = (limit - limit % 16);
-    if(BLOCKLARGE <= 16) {
-      BLOCKLARGE = 16;
-    }
+    // BLOCKLARGE = (limit - limit % 16);
+    // if(BLOCKLARGE <= 16) {
+    //   BLOCKLARGE = 16;
+    // }
+    BLOCKLARGE = limit;
   }
   if( buf_size < 0 ) {
     BLOCKBUFFER = FARRAY_BUFFERSIZE;
@@ -65,7 +66,10 @@ R_xlen_t setFArrayBlockSize(R_xlen_t size, R_xlen_t limit, R_xlen_t buf_size){
     if(buf_size > FARRAY_BUFFERSIZE_LIMIT) {
       BLOCKBUFFER = FARRAY_BUFFERSIZE_LIMIT;
     } else {
-      BLOCKBUFFER = buf_size;
+      BLOCKBUFFER = (buf_size - buf_size % 16);
+      if(BLOCKBUFFER < 16){
+        BLOCKBUFFER = 16;
+      }
     }
   }
 

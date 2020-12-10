@@ -266,7 +266,7 @@ AbstractFArray <- R6::R6Class(
       ndims <- length(dim)
       idx <- ndims - which(cumprod(rev(dim)) >= nchunks)[[1]] + 1
 
-      self_m <- as.fmatrix(self, type = self$backend)
+      self_m <- as.fmatrix(self)
       if(idx == 1){
         lapply2(seq_len(chunkf$nchunks), function(ii){
           idx_range <- chunkf$get_indices(ii, as_numeric = TRUE)[[1]]

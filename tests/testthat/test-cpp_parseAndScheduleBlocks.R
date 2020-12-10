@@ -5,12 +5,12 @@ test_that("subset scheduler-normal case, NA & 0 cases", {
   dim <- c(5,7,8,10)
   slice <- list(c(1,1,2),1,2:3,4:5)
 
-  check_schedule <- function(slice, dim){
+  check_schedule <- function(slice, dim, forceSchedule = 0){
     slice_copy <- lapply(slice, I); force(slice_copy)
-    res <- parseAndScheduleBlocks2(slice_copy, dim)
+    res <- parseAndScheduleBlocks2(slice_copy, dim, forceSchedule)
     re <- res$schedule
     block_lb <- getFArrayBlockSize(0)
-    block_ub <- getFArrayBlockSize(1)
+    block_ub <- getFArrayBlockSize(1) * get_farray_threads()
     ndims <- length(dim)
 
     valid_slices <- lapply(seq_along(slice), function(ii){
@@ -45,7 +45,7 @@ test_that("subset scheduler-normal case, NA & 0 cases", {
     block_expected_length <- prod(sapply(valid_slices[seq_len(block_ndims)], length))
     schedule_counts_per_part <- prod(sapply(valid_slices, length)) / partition_counts / block_expected_length
     block_indexed <- FALSE
-    if(block_ndims >= 2 && block_expected_length <= block_ub){
+    if(block_ndims >= 2 && (cum_dim[block_ndims] <= block_ub || forceSchedule == 1) && (forceSchedule != -1)){
       block_schedule <- loc2idx3(valid_slices[seq_len(block_ndims)], dim[seq_len(block_ndims)])
       block_indexed <- TRUE
 
@@ -94,12 +94,31 @@ test_that("subset scheduler-normal case, NA & 0 cases", {
 
   setFArrayBlockSize(1)
   check_schedule(slice, dim)
+  check_schedule(slice, dim, 1)
+  check_schedule(slice, dim, -1)
   setFArrayBlockSize(30)
   check_schedule(slice, dim)
-  setFArrayBlockSize(300)
+  check_schedule(slice, dim, 1)
+  check_schedule(slice, dim, -1)
+
+  blarge <- prod(dim[1:2]) / get_farray_threads()
+  setFArrayBlockSize(30, floor(blarge-1))
+  parsed <- parseAndScheduleBlocks2(slice, dim = dim)
+  expect_false(parsed$schedule$block_indexed)
   check_schedule(slice, dim)
+  setFArrayBlockSize(30, floor(blarge+1))
+  parsed <- parseAndScheduleBlocks2(slice, dim = dim)
+  expect_true(parsed$schedule$block_indexed)
+  check_schedule(slice, dim)
+
+  setFArrayBlockSize(300, -1)
+  check_schedule(slice, dim)
+  check_schedule(slice, dim, 1)
+  check_schedule(slice, dim, -1)
   setFArrayBlockSize(10000)
   check_schedule(slice, dim)
+  check_schedule(slice, dim, 1)
+  check_schedule(slice, dim, -1)
 
   dim <- c(5,7,8,10)
 
@@ -112,12 +131,31 @@ test_that("subset scheduler-normal case, NA & 0 cases", {
 
   setFArrayBlockSize(1)
   check_schedule(slice, dim)
+  check_schedule(slice, dim, 1)
+  check_schedule(slice, dim, -1)
   setFArrayBlockSize(30)
   check_schedule(slice, dim)
-  setFArrayBlockSize(300)
+  check_schedule(slice, dim, 1)
+  check_schedule(slice, dim, -1)
+
+  blarge <- prod(dim[1:2]) / get_farray_threads()
+  setFArrayBlockSize(30, floor(blarge-1))
+  parsed <- parseAndScheduleBlocks2(slice, dim = dim)
+  expect_false(parsed$schedule$block_indexed)
   check_schedule(slice, dim)
+  setFArrayBlockSize(30, floor(blarge+1))
+  parsed <- parseAndScheduleBlocks2(slice, dim = dim)
+  expect_true(parsed$schedule$block_indexed)
+  check_schedule(slice, dim)
+
+  setFArrayBlockSize(300, -1)
+  check_schedule(slice, dim)
+  check_schedule(slice, dim, 1)
+  check_schedule(slice, dim, -1)
   setFArrayBlockSize(10000)
   check_schedule(slice, dim)
+  check_schedule(slice, dim, 1)
+  check_schedule(slice, dim, -1)
 })
 
 

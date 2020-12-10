@@ -3,7 +3,7 @@ test_that("summary statistics", {
     farray::farray(tempfile(),
                          dim = c(100, 100),
                          storage_format = 'double')
-  # parsed <- parseAndScheduleBlocks2(list(get_missing_value(),1), x$dim, forceSchedule = TRUE)
+  # parsed <- parseAndScheduleBlocks2(list(get_missing_value(),1), x$dim, forceSchedule = 1)
   x[, 1] <- 1:100
   x[, 2] <- NA
   x[, 3] <- c(0, rep(NA, 99))

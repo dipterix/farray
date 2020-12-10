@@ -44,14 +44,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // parseAndScheduleBlocks2
-Rcpp::List parseAndScheduleBlocks2(SEXP sliceIdx, Rcpp::NumericVector dim, bool forceSchedule);
+Rcpp::List parseAndScheduleBlocks2(SEXP sliceIdx, Rcpp::NumericVector dim, int forceSchedule);
 RcppExport SEXP _farray_parseAndScheduleBlocks2(SEXP sliceIdxSEXP, SEXP dimSEXP, SEXP forceScheduleSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type sliceIdx(sliceIdxSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type dim(dimSEXP);
-    Rcpp::traits::input_parameter< bool >::type forceSchedule(forceScheduleSEXP);
+    Rcpp::traits::input_parameter< int >::type forceSchedule(forceScheduleSEXP);
     rcpp_result_gen = Rcpp::wrap(parseAndScheduleBlocks2(sliceIdx, dim, forceSchedule));
     return rcpp_result_gen;
 END_RCPP

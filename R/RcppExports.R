@@ -13,7 +13,7 @@ parseSlices <- function(listOrEnv, dim, pos_subscript = TRUE) {
     .Call(`_farray_parseSlices`, listOrEnv, dim, pos_subscript)
 }
 
-parseAndScheduleBlocks2 <- function(sliceIdx, dim, forceSchedule = FALSE) {
+parseAndScheduleBlocks2 <- function(sliceIdx, dim, forceSchedule = 0L) {
     .Call(`_farray_parseAndScheduleBlocks2`, sliceIdx, dim, forceSchedule)
 }
 

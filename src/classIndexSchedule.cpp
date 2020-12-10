@@ -49,7 +49,7 @@ ScheduledIndex::ScheduledIndex(
   block_length = block_prod_dim[block_ndims-1] * block_dimension[block_ndims-1];
 }
 
-ScheduledIndex::ScheduledIndex(SEXP locations, const std::vector<int64_t>& dim, bool forceSchedule, int64_t hint){
+ScheduledIndex::ScheduledIndex(SEXP locations, const std::vector<int64_t>& dim, int forceSchedule, int64_t hint){
   int64_t ndims = dim.size();
 
   stopIfNot(
@@ -119,7 +119,7 @@ ScheduledIndex::ScheduledIndex(SEXP locations, const std::vector<int64_t>& dim, 
   int64_t subblock_idx_size = block_length;
   std::vector<std::pair<std::vector<int64_t>, bool>> buffer_loc_vec;
   SEXP buffer_loc;
-  if(buffer_margin >= 2 && (block_size < (buffer_cap * nThreads) || forceSchedule)){
+  if(buffer_margin >= 2 && (block_size < (buffer_cap * nThreads) || forceSchedule == 1) && !(forceSchedule == -1)){
     buffer_expanded = true;
     buffer_loc_vec = std::vector<std::pair<std::vector<int64_t>, bool>>(buffer_margin);
     buffer_loc = PROTECT(Rf_allocVector(VECSXP, buffer_margin));
@@ -654,14 +654,14 @@ List parseSlices(SEXP listOrEnv, const std::vector<int64_t>& dim, bool pos_subsc
   return res;
 }
 
-List parseAndScheduleBlocks2(SEXP listOrEnv, NumericVector dim, bool forceSchedule){
+List parseAndScheduleBlocks2(SEXP listOrEnv, NumericVector dim, int forceSchedule){
   ParsedIndex* subparsed = parseAndScheduleBlocks(listOrEnv, as<std::vector<int64_t>>(dim), forceSchedule);
   List res = subparsed->asList();
   delete subparsed;
   return res;
 }
 
-ParsedIndex* parseAndScheduleBlocks(SEXP listOrEnv, const std::vector<int64_t>& dim, bool forceSchedule, int64_t hint){
+ParsedIndex* parseAndScheduleBlocks(SEXP listOrEnv, const std::vector<int64_t>& dim, int forceSchedule, int64_t hint){
   tok("S parseAndScheduleBlocks");
 
 

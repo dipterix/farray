@@ -39,7 +39,7 @@ test_that("Saver", {
 
   # ------------------------ schedule blocks: indexed --------------------
   setFArrayBlockSize(-1,-1,-1)
-  subparsed <- farray:::parseAndScheduleBlocks2(list(1:10,2:10,1:2,1), dim, forceSchedule = FALSE)
+  subparsed <- farray:::parseAndScheduleBlocks2(list(1:10,2:10,1:2,1), dim, forceSchedule = 0)
   expect_true(subparsed$schedule$block_indexed)
 
   reset_x()
@@ -81,7 +81,7 @@ test_that("Saver", {
   expect_false(x$has_partition(1))
   farray:::setFArrayBlockSize(0L, 1L)
   expect_equal(farray:::getFArrayBlockSize(1), 1L)
-  subparsed <- farray:::parseAndScheduleBlocks2(list(1:10,2:10,1:2,1), dim, forceSchedule = FALSE)
+  subparsed <- farray:::parseAndScheduleBlocks2(list(1:10,2:10,1:2,1), dim, forceSchedule = 0)
   expect_false(subparsed$schedule$block_indexed)
 
   reset_x()

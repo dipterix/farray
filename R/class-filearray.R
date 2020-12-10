@@ -103,6 +103,24 @@ FileArray <- R6::R6Class(
       } else {
         array(self$sample_na, self$partition_dim())
       }
+    },
+    set_partition_data = function(part, data) {
+      if(!length(data) %in% c(1, self$partition_length)){
+        pfile <- self$get_partition_fpath(part = part, full_path = TRUE, type = 'combined')
+        if(self$has_partition(part)){
+          fm <- filematrix::fm.open(pfile, readonly = FALSE)
+        } else {
+          fm <- filematrix::fm.create(pfile, nrow = self$partition_length, ncol = 1, type = self$storage_format)
+        }
+        on.exit({
+          filematrix::close(fm)
+        }, add = TRUE)
+        if(length(data) == 1){
+          data <- rep(data, self$partition_length)
+        }
+        fm[] <- data
+      }
+      invisible()
     }
   )
 )
@@ -144,9 +162,9 @@ FileArray <- R6::R6Class(
     stop("`[<-.FileArray`: x is read-only")
   }
 
-  parsed <- parseAndScheduleBlocks2(environment(), x$dim, FALSE)
-  # parsed <- parseAndScheduleBlocks2(list(1:10,2:10,3:10,4:5), x$dim, FALSE)
-  # parsed <- parseAndScheduleBlocks2(list(idx,idx,get_missing_value(),get_missing_value()), x$dim, F)
+  parsed <- parseAndScheduleBlocks2(environment(), x$dim, 0)
+  # parsed <- parseAndScheduleBlocks2(list(1:10,2:10,3:10,4:5), x$dim, 0)
+  # parsed <- parseAndScheduleBlocks2(list(idx,idx,get_missing_value(),get_missing_value()), x$dim, 0)
 
   if(parsed$subset_mode == 1){
     stop("FileArray does not support single subscript (x[i]<-v), try x[]<-v or x[i,j,k,...]<-v")
@@ -248,8 +266,8 @@ FileArray <- R6::R6Class(
 #   if(length(value)){
 #
 #     parsed <- parseAndScheduleBlocks2(environment(), x$dim)
-#     # parsed <- parseAndScheduleBlocks2(list(1:10,2:10,3:10,4:10), x$dim, TRUE)
-#     # parsed <- parseAndScheduleBlocks2(list(1,1,1,1), x$dim, TRUE)
+#     # parsed <- parseAndScheduleBlocks2(list(1:10,2:10,3:10,4:10), x$dim, 1)
+#     # parsed <- parseAndScheduleBlocks2(list(1,1,1,1), x$dim, 1)
 #
 #     if(parsed$subset_mode == 1){
 #       stop("FileArray does not support single subscript (x[i]<-v), try x[]<-v or x[i,j,k,...]<-v")
