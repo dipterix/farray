@@ -139,7 +139,7 @@ make_chunks <- function(dim, chunk_size, max_nchunks = 200, recursive = FALSE){
 }
 
 lapply2 <- function(x, FUN, ...){
-  if( length(x) > 1 && has_dipsaus() ){
+  if( getOption('farray.parallel.enabled', FALSE) && length(x) > 1 && has_dipsaus() ){
     dipsaus::lapply_async2(x, FUN, FUN.args = list(...), plan = getOption('farray.parallel.strategy', FALSE))
   } else {
     lapply(x, FUN, ...)
@@ -161,4 +161,33 @@ auto_chunks <- function(x, limit = 0.5){
   }
   max_nchunks <- max(ceiling(max_nchunks), 1L)
   max_nchunks
+}
+
+
+get_missing_value <- function(){
+  (function(...){
+    parseDots(environment(), FALSE)[[1]]
+  })(,)
+}
+
+
+rand_string <- function(length = 50){
+  paste(sample(c(letters, LETTERS, 0:9), length, replace = TRUE), collapse = '')
+}
+
+#' Check if Package `'dipsaus'` has been installed
+#' @export
+has_dipsaus <- function(){
+  system.file('', package = 'dipsaus') != ''
+}
+
+import_from <- function(name, default = NULL, package) {
+  ns <- getNamespace(package)
+  if (exists(name, mode = "function", envir = ns, inherits = FALSE)) {
+    get(name, mode = "function", envir = ns, inherits = FALSE)
+  } else if (!is.null(default)) {
+    default
+  } else {
+    stop(sprintf("No such '%s' function: %s(). Please check whether package `%s` is installed.", package, name, package))
+  }
 }

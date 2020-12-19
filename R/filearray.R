@@ -36,23 +36,8 @@
 #' drives. This format is compatible with the package `filematrix`.
 #' The data types supported are integers and double-float numbers.
 #'
-#' Type `fstarray` stores data in `fst` format defined by the
-#' package `fstcore` using 'ZSTD' compression technique. Unlike
-#' `filearray`, `fstarray` supports complex numbers and string
-#' characters in addition to integer and double numbers.
-#'
 #' The performance on solid-state drives mounted on 'NVMe' shows
-#' `filearray` can reach up to 3 GB per second for reading speed and
-#' `fstarray` can reach up to 1 GB per second.
-#'
-#' By default, `filearray` will be used if the storage format is supported,
-#' and `fstarray` is the back-up option. However, if the array data is
-#' structured or ordered, or the storage size is a major concern,
-#' `fstarray` might achieve a better performance because it compresses
-#' data before writing to hard drive.
-#'
-#' To explicitly create file array, use the function `filearray()`.
-#' Similarly, use `fstarray()` to create `fst`-based array.
+#' `filearray` can reach up to 1-3 GB per second for reading speed.
 #'
 #' @section Array Partitions:
 #'
@@ -86,11 +71,6 @@
 #' For `filearray`, the block size equals to the first margin. For
 #' example, a \eqn{100 x 200 x 3} file array will have 3 file partitions,
 #' 200 blocks, each block has 100 elements
-#'
-#' As for `fstarray`, the lower bound of block size can be set by
-#' `options(farray.fstarray.blocksize=...)`. By default, this number is
-#' 16,384. For a \eqn{100 x 200 x 3} array, each partition only has one block
-#' and block number if 20,000.
 #'
 #' @section Indexing and Recommended Dimension Settings:
 #'
@@ -235,8 +215,173 @@ as.farray.default <- function(x, path, dim, storage_format, ...){
 
 }
 
+
 #' @export
-as.farray.AbstractFArray <- function(x, path, ...){
-  x
+as.farray.AbstractFArray <- function(x, path, dim, partitions, meta_name = "farray.meta", ...){
+  if(missing(path) && missing(partitions)){
+    if(!missing(dim)){
+      x <- x$clone(deep = FALSE)
+      dim(x) <- dim
+    }
+    return(x)
+  }
+
+  if(missing(path)){
+    path <- tempfile()
+  }
+
+  if(missing(partitions)) {
+    partitions <- seq_len(x$npart)
+  }
+
+  if(missing(dim)){
+    dim <- x$partition_dim()
+    dim[[length(dim)]] <- length(partitions)
+  } else {
+    stopifnot(dim[[length(dim)]] == length(partitions))
+    stopifnot(prod(dim[-length(dim)]) == x$partition_length)
+  }
+
+  re <- farray(path, dim = dim, read_only = FALSE, storage_format = x$storage_format, meta_name = meta_name)
+
+  # copy everything as symlink to path
+  for(ii in seq_along(partitions)){
+    p <- partitions[[ii]]
+    fs <- c(
+      x$get_partition_fpath(p, full_path = FALSE),
+      x$get_partition_fpath(p, full_path = FALSE, type = "desc"),
+      x$get_partition_fpath(p, full_path = FALSE, summary_file = TRUE)
+    )
+    for(f in fs){
+      source <- file.path(x$storage_path, f)
+      tname <- sub("^[0-9]+", ii, f)
+      target <- file.path(path, tname)
+      if(file.exists(target)){
+        unlink(target)
+      }
+      file.symlink(source, target)
+    }
+  }
+
+  re
+}
+
+#' @export
+as.farray.data.frame <- function(x, path, dim, storage_format, ...){
+  if(missing(path)){
+    path <- tempfile()
+  }
+  if(!all(sapply(x, mode) == "numeric")){
+    stop(sQuote("x"), " must be a numerical data.frame.")
+  }
+  ncols <- ncol(x)
+  if(missing(storage_format)){
+    if(length(ncols) && all(sapply(x, storage.mode) == 'integer')){
+      storage_format <- "integer"
+    } else {
+      storage_format <- 'double'
+    }
+  }
+  if(missing(dim)){
+    dim <- base::dim(x)
+  } else if(dim[[length(dim)]] != ncols || prod(dim[-length(dim)]) != nrow(x)){
+    stop("Dimension not match.")
+  }
+
+  re <- farray(path, dim = dim, storage_format = storage_format, ...)
+  for(ii in seq_len(ncols)){
+    re$set_partition_data(part = ii, data = x[[ii]])
+  }
+  re
+}
+
+#' @export
+as.farray.fst_table <- function(x, path, dim, storage_format, ...){
+  if(missing(path)){
+    path <- tempfile()
+  }
+  meta <- .subset2(x, "meta")
+  if(!all(meta$columnTypes %in% c(5,10))){
+    stop(sQuote("x"), " must be a numerical data.frame.")
+  }
+  ncols <- ncol(x)
+  if(missing(storage_format)){
+    if(length(ncols) && all(meta$columnTypes == 5)){
+      storage_format <- "integer"
+    } else {
+      storage_format <- 'double'
+    }
+  }
+  if(missing(dim)){
+    dim <- base::dim(x)
+  } else if(dim[[length(dim)]] != ncols || prod(dim[-length(dim)]) != nrow(x)){
+    stop("Dimension not match.")
+  }
+
+  re <- farray(path, dim = dim, storage_format = storage_format, ...)
+  lapply2(seq_len(ncols), function(ii){
+    re$set_partition_data(part = ii, data = x[[ii]])
+  })
+  # for(ii in seq_len(ncols)){
+  #   re$set_partition_data(part = ii, data = x[[ii]])
+  # }
+  re
+}
+
+
+#' Automatically remove array data
+#' @author Zhengjia Wang
+#' @description Remove the files containing array data once no
+#' 'farray' instance is using the folder. Require
+#' installation of `dipsaus` package (at least version 0.0.8).
+#' @param x 'farray' instance
+#' @param onexit passed to [reg.finalizer()]
+#'
+#' @details `auto_clear_farray` attempts to remove the entire folder
+#' containing array data. However, if some files are not created by the
+#' array, only partition data and meta file will be removed, all the
+#' artifacts will remain and warning will be displayed. One exception is
+#' if all files left in the array directory are `*.meta` files,
+#' all these meta files will be removed along with the folder.
+#'
+#' @examples
+#'
+#' path <- tempfile()
+#' arr_dbl <- farray(path, storage_format = 'double',
+#'                      dim = 2:4, meta_name = 'meta-dbl.meta')
+#' arr_dbl[] <- 1:24
+#' auto_clear_farray(arr_dbl)
+#'
+#' arr_dbl2 <- farray(path, storage_format = 'double',
+#'                      dim = 2:4, meta_name = 'meta-2.meta')
+#' auto_clear_farray(arr_dbl2)
+#'
+#' # remove either one, the directory still exists
+#' rm(arr_dbl); invisible(gc(verbose = FALSE))
+#'
+#' arr_dbl2[1,1,1]
+#'
+#' # Remove the other one, and path will be removed
+#' rm(arr_dbl2); invisible(gc(verbose = FALSE))
+#'
+#' dir.exists(path)
+#' arr_check <- farray(path, storage_format = 'double',
+#'                        dim = 2:4, meta_name = 'meta-2.meta')
+#'
+#' # data is removed, so there should be no data (NAs)
+#' arr_check[]
+#'
+#' @export
+auto_clear_farray <- function(x, onexit = FALSE){
+  if(requireNamespace('dipsaus', quietly = TRUE)){
+    path <- x$storage_path
+    path <- normalizePath(path)
+    dipsaus::shared_finalizer(x, key = path, function(e){
+      e$remove_data(force = TRUE)
+    }, onexit = onexit)
+    rm(path)
+  }
+  rm(x, onexit)
+  invisible()
 }
 

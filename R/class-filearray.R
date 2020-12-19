@@ -105,7 +105,7 @@ FileArray <- R6::R6Class(
       }
     },
     set_partition_data = function(part, data) {
-      if(!length(data) %in% c(1, self$partition_length)){
+      if(length(data) %in% c(1, self$partition_length)){
         pfile <- self$get_partition_fpath(part = part, full_path = TRUE, type = 'combined')
         if(self$has_partition(part)){
           fm <- filematrix::fm.open(pfile, readonly = FALSE)
@@ -119,6 +119,8 @@ FileArray <- R6::R6Class(
           data <- rep(data, self$partition_length)
         }
         fm[] <- data
+      } else {
+        stop("Data length mismatches with partition length.")
       }
       invisible()
     }

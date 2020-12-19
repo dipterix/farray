@@ -31,6 +31,7 @@ Suggests:
     future.callr,
     testthat (>= 3.0.0),
     spelling,
+    tensor,
     lifecycle
 URL: https://github.com/dipterix/farray
 BugReports: https://github.com/dipterix/farray/issues

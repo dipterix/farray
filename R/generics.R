@@ -251,4 +251,18 @@ chunk_map.AbstractFArray <- function(x, map_fun, reduce, max_nchunks, chunk_size
 }
 
 
+#' @export
+as.vector.AbstractFArray <- function(x, mode = "any"){
+  as.vector(x[drop=FALSE], mode = mode)
+}
 
+#' @export
+as.array.AbstractFArray <- function(x, ...){
+  x[drop=FALSE]
+}
+
+#' @export
+as.matrix.AbstractFArray <- function(x, ...){
+  dim <- c(x$partition_length, x$npart)
+  x[reshape = dim]
+}
