@@ -81,7 +81,7 @@ disks. The data content is load on demand." />
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -92,7 +92,7 @@ disks. The data content is load on demand." />
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/dipterix/farray/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -110,7 +110,7 @@ disks. The data content is load on demand." />
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Create or load a <code>farray</code> instance</h1>
-    <small class="dont-index">Source: <a href='https://github.com/dipterix/farray/blob/master/R/lazyarray.R'><code>R/lazyarray.R</code></a></small>
+    <small class="dont-index">Source: <a href='https://github.com/dipterix/farray/blob/master/R/filearray.R'><code>R/filearray.R</code></a></small>
     <div class="hidden name"><code>farray.Rd</code></div>
     </div>
 
@@ -199,20 +199,8 @@ the same array object; see Section "Array Partitions" for details.</p>
 <p>Type <code>filearray</code> stores data in its binary form "as-is" to the local
 drives. This format is compatible with the package <code>filematrix</code>.
 The data types supported are integers and double-float numbers.</p>
-<p>Type <code>fstarray</code> stores data in <code>fst</code> format defined by the
-package <code>fstcore</code> using 'ZSTD' compression technique. Unlike
-<code>filearray</code>, <code>fstarray</code> supports complex numbers and string
-characters in addition to integer and double numbers.</p>
 <p>The performance on solid-state drives mounted on 'NVMe' shows
-<code>filearray</code> can reach up to 3 GB per second for reading speed and
-<code>fstarray</code> can reach up to 1 GB per second.</p>
-<p>By default, <code>filearray</code> will be used if the storage format is supported,
-and <code>fstarray</code> is the back-up option. However, if the array data is
-structured or ordered, or the storage size is a major concern,
-<code>fstarray</code> might achieve a better performance because it compresses
-data before writing to hard drive.</p>
-<p>To explicitly create file array, use the function <code>filearray()</code>.
-Similarly, use <code>fstarray()</code> to create <code>fst</code>-based array.</p>
+<code>filearray</code> can reach up to 1-3 GB per second for reading speed.</p>
     <h2 class="hasAnchor" id="array-partitions"><a class="anchor" href="#array-partitions"></a>Array Partitions</h2>
 
     
@@ -246,10 +234,6 @@ an element within each block is used, then the whole block gets read.</p>
 <p>For <code>filearray</code>, the block size equals to the first margin. For
 example, a \(100 x 200 x 3\) file array will have 3 file partitions,
 200 blocks, each block has 100 elements</p>
-<p>As for <code>fstarray</code>, the lower bound of block size can be set by
-<code><a href='https://rdrr.io/r/base/options.html'>options(farray.fstarray.blocksize=...)</a></code>. By default, this number is
-16,384. For a \(100 x 200 x 3\) array, each partition only has one block
-and block number if 20,000.</p>
     <h2 class="hasAnchor" id="indexing-and-recommended-dimension-settings"><a class="anchor" href="#indexing-and-recommended-dimension-settings"></a>Indexing and Recommended Dimension Settings</h2>
 
     
@@ -282,15 +266,15 @@ fastest, then <code>x[,i,]</code>, then <code>x[i,,]</code>.</p>
 #&gt; [2,]    2    4    6</div><div class='input'>
 <span class='co'># Partition file path (total 4 partitions)</span>
 <span class='va'>arr</span><span class='op'>$</span><span class='fu'>get_partition_fpath</span><span class='op'>(</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; [1] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpgjjEdc/file91339d47cce/1.bmat"
-#&gt; [2] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpgjjEdc/file91339d47cce/2.bmat"
-#&gt; [3] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpgjjEdc/file91339d47cce/3.bmat"
-#&gt; [4] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpgjjEdc/file91339d47cce/4.bmat"</div><div class='input'>
+</div><div class='output co'>#&gt; [1] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpWuEl9p/file8106fb4c873/1.bmat"
+#&gt; [2] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpWuEl9p/file8106fb4c873/2.bmat"
+#&gt; [3] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpWuEl9p/file8106fb4c873/3.bmat"
+#&gt; [4] "/private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/RtmpWuEl9p/file8106fb4c873/4.bmat"</div><div class='input'>
 <span class='co'># Removing array doesn't clear the data</span>
 <span class='fu'><a href='https://rdrr.io/r/base/rm.html'>rm</a></span><span class='op'>(</span><span class='va'>arr</span><span class='op'>)</span>; <span class='fu'><a href='https://rdrr.io/r/base/gc.html'>gc</a></span><span class='op'>(</span><span class='op'>)</span>
 </div><div class='output co'>#&gt;           used (Mb) gc trigger (Mb) limit (Mb) max used (Mb)
-#&gt; Ncells  968855 51.8    1777328   95         NA  1777328   95
-#&gt; Vcells 1825082 14.0    8388608   64      16384  2739982   21</div><div class='input'>
+#&gt; Ncells  911017 48.7    1772004 94.7         NA  1772004 94.7
+#&gt; Vcells 1708615 13.1    8388608 64.0      16384  2762305 21.1</div><div class='input'>
 <span class='co'># ---------------- Case 2: Load from existing directory ----------------</span>
 <span class='co'># Load from existing path, no need to specify other params</span>
 <span class='va'>arr</span> <span class='op'>&lt;-</span> <span class='fu'>farray</span><span class='op'>(</span><span class='va'>path</span>, read_only <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
@@ -327,9 +311,9 @@ fastest, then <code>x[,i,]</code>, then <code>x[i,,]</code>.</p>
 
 <span class='co'># arr also changes</span>
 <span class='va'>arr</span><span class='op'>[</span>,,<span class='fl'>1</span><span class='op'>]</span>
-</div><div class='output co'>#&gt;              [,1]      [,2]       [,3]
-#&gt; [1,] -2.437263611 0.6215527 -1.8218177
-#&gt; [2,] -0.005571287 1.1484116 -0.2473253</div><div class='input'>
+</div><div class='output co'>#&gt;            [,1]         [,2]      [,3]
+#&gt; [1,] -1.4000435 -2.437263611 0.6215527
+#&gt; [2,]  0.2553171 -0.005571287 1.1484116</div><div class='input'>
 
 <span class='co'># ---------------- Case 4: Converting from R arrays ----------------</span>
 
