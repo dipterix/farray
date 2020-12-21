@@ -23,6 +23,9 @@ The default value is \code{"auto"}, i.e. \code{future::availableCores()}}
 
 \item{...}{Further passed to \code{\link[future:plan]{future::plan()}}}
 }
+\value{
+Current parallel strategy
+}
 \description{
 Enable parallel processing, need \code{dipsaus} to be installed.
 For \code{"callr"} strategy, please also install \code{future.callr}.

@@ -1,121 +1,28 @@
-is_block_index <- function(dim, idx){
-  if(idx == length(dim)){
-    return(TRUE)
-  }
-  parsed <- parseAndScheduleBlocks2(lapply(dim, function(d){1}), dim)
-  if(parsed$schedule$block_indexed){
-    return(parsed$schedule$block_ndims < idx)
-  }
-  return(FALSE)
-}
-
-farray_collapse <- function(x, along, method = c("sum", "average"), path = tempfile()){
-  method <- match.arg(method)
-  average <- method == "average"
-  xdim <- dim(x)
-  ndims <- length(xdim)
-  keep <- seq_len(ndims)
-  keep <- keep[!keep %in% along]
-
-  stopifnot(length(along) > 0)
-
-  if(!length(keep)){
-    if(average){
-      return(mean(x))
-    } else {
-      return(sum(x))
-    }
-  }
-
-  # check the largest idx
-  slice_margin <- keep[[length(keep)]]
-
-  collapse_margin <- !is_block_index(xdim, slice_margin)
-  if(collapse_margin){
-    keep <- c(keep, length(xdim))
-    slice_margin <- ndims
-    tpath <- tempfile()
-    on.exit({
-      if(dir.exists(tpath)){
-        unlink(tpath, recursive = TRUE, force = TRUE)
-      }
-    }, after = TRUE, add = TRUE)
-  } else {
-    tpath <- path
-  }
-
-  desc_dim <- xdim[keep]
-
-  if(has_dipsaus()){
-    collapse_func <- function(slice, keep){
-      dipsaus::collapse(slice, keep, average = average)
-    }
-  } else if (average){
-    collapse_func <- function(slice, keep){
-      apply(slice, keep, mean)
-    }
-  } else {
-    collapse_func <- function(slice, keep){
-      apply(slice, keep, sum)
-    }
-  }
-
-  # in favor of this slice type
-  loc <- replicate(ndims, get_missing_value(), simplify = FALSE)
-  getSlice <- function(idx){
-    loc[[slice_margin]] <- idx
-    expr <- as.call(c(list(quote(`[`), quote(x), drop=FALSE), loc))
-    eval(expr)
-  }
-
-  if(length(desc_dim) == 1){
-    # no need to collapse_margin
-    res <- sapply(seq_len(xdim[slice_margin]), function(ii){
-      slice <- getSlice(ii)
-      collapse_func(slice, keep)
-    }, simplify = TRUE)
-    desc <- as.farray(res, path, dim = c(length(res), 1), storage_format = 'double')
-  } else {
-    if(length(desc_dim) != ndims){
-      desc <- farray(tpath, dim = desc_dim, read_only = FALSE, storage_format = 'double')
-
-      lapply(seq_len(xdim[slice_margin]), function(ii){
-        slice <- getSlice(ii)
-        desc$set_partition_data(ii, collapse_func(slice, keep))
-      })
-
-    } else {
-      desc <- x
-    }
-
-    if(collapse_margin){
-      res <- 0
-      for(ii in seq_len(desc$npart)){
-        res <- res + desc$get_partition_data(part = ii)
-      }
-      if(length(desc_dim) > 2){
-        dim(res) <- desc_dim[-length(desc_dim)]
-      }
-      if(average){
-        res <- res / desc$npart
-      }
-      desc <- as.farray(res, path = path, storage_format = 'double')
-    }
-  }
-
-
-  desc
-
-}
-
-negative_subscript2 <- function(x, sub){
-  if(length(sub)){
-    return(x[-sub])
-  } else {
-    return(x)
-  }
-}
-
+#' Product of two arrays
+#' @description Consistent with `tensor()` function in `tensor` package, or
+#' `ttl()` in `rTensor` package.
+#' @param A,B an [`array`] or [`farray`]
+#' @param alongA,alongB integers; margins in `A` and `B` to be collapsed.
+#' @param path,meta_name where to store the results; see [`farray`].
+#' @details It is highly recommended that `A` is a small array and `B` is a
+#' large array. The performance if highly related to how `alongB` is assigned.
+#' If all the fast margins (see [`is_fast_margin`]) are contained within
+#' `alongB`, then there is no memory optimization, and the whole calculation
+#' occurs in the memory. If at least one fast margin is not in `alongB`, then
+#' the calculation is memory optimized.
+#'
+#' @return A [`farray`] object.
+#'
+#' @examples
+#'
+#' x <- matrix(1:12, ncol = 4)
+#' y <- array(rnorm(120), c(4,5,6))
+#'
+#' # Equivalent to tensor::tensor(x, y, alongA = 2, alongB = 1)
+#' # or rTensor::ttm(rTensor::as.tensor(y), x, m = 1)
+#' tensorprod(x, y, alongA = 2, alongB = 1)
+#'
+#' @export
 tensorprod <- function(A, B, alongA = integer(0), alongB = integer(0),
                        path = tempfile(), meta_name = 'farray.meta'){
   dimA <- dim(A)
@@ -162,7 +69,7 @@ tensorprod <- function(A, B, alongA = integer(0), alongB = integer(0),
 
 
   # check block index
-  isBlockIdx <- sapply(keepB, function(idx){ is_block_index(dimB, idx) })
+  isBlockIdx <- sapply(keepB, function(idx){ is_fast_margin(dimB, idx) })
   if(length(isBlockIdx) && any(isBlockIdx)) {
     # use this margin to index slice of B
     partition_margin <- max(keepB[isBlockIdx])
@@ -288,7 +195,7 @@ tensorprod <- function(A, B, alongA = integer(0), alongB = integer(0),
   #   alongB_tmp <- alongB[sel]
   #   alongA_tmp <- alongA[sel]
   #   tmp <- Recall(A, B, alongB_tmp, alongA_tmp, tempfile())
-  #   dest <- farray_collapse(tmp, c(alongA[!sel], tmp$ndim), method = 'sum', path = path)
+  #   dest <- collapse2(tmp, c(alongA[!sel], tmp$ndim), method = 'sum', path = path)
   # }
 
 

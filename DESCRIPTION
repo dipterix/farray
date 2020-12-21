@@ -25,7 +25,8 @@ Imports:
     filematrix,
     R6 (>= 2.5.0),
     yaml (>= 2.2.1),
-    future (>= 1.20.1)
+    future (>= 1.20.1),
+    future.apply (>= 1.6.0)
 Suggests: 
     dipsaus (>= 0.1.1),
     future.callr,

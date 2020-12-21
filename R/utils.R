@@ -1,3 +1,21 @@
+
+get_os <- function () {
+  os <- R.version$os
+  if (grepl("^darwin", os, ignore.case = TRUE)) {
+    return("darwin")
+  }
+  if (grepl("^linux", os, ignore.case = TRUE)) {
+    return("linux")
+  }
+  if (grepl("^solaris", os, ignore.case = TRUE)) {
+    return("solaris")
+  }
+  if (grepl("^win", os, ignore.case = TRUE)) {
+    return("windows")
+  }
+  return("unknown")
+}
+
 dir_create <- function(path, showWarnings = FALSE, recursive = TRUE, ...){
   dir.create(path = path, showWarnings = showWarnings, recursive = recursive, ...)
 }
@@ -139,8 +157,11 @@ make_chunks <- function(dim, chunk_size, max_nchunks = 200, recursive = FALSE){
 }
 
 lapply2 <- function(x, FUN, ...){
-  if( getOption('farray.parallel.enabled', FALSE) && length(x) > 1 && has_dipsaus() ){
-    dipsaus::lapply_async2(x, FUN, FUN.args = list(...), plan = getOption('farray.parallel.strategy', FALSE))
+  if( getOption('farray.parallel.enabled', FALSE) && length(x) > 1 ){
+    if(!isFALSE(getOption('farray.parallel.strategy', FALSE))){
+      future::plan(getOption('farray.parallel.strategy', FALSE))
+    }
+    future.apply::future_lapply(x, FUN, ..., future.chunk.size = NULL, future.seed = sample.int(1, n = 1e+05 - 1))
   } else {
     lapply(x, FUN, ...)
   }
@@ -189,5 +210,14 @@ import_from <- function(name, default = NULL, package) {
     default
   } else {
     stop(sprintf("No such '%s' function: %s(). Please check whether package `%s` is installed.", package, name, package))
+  }
+}
+
+
+negative_subscript2 <- function(x, sub){
+  if(length(sub)){
+    return(x[-sub])
+  } else {
+    return(x)
   }
 }

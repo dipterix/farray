@@ -257,6 +257,18 @@ RcppExport SEXP _farray_hasOpenMP() {
     UNPROTECT(1);
     return rcpp_result_gen;
 }
+// addTo
+SEXP addTo(SEXP x, SEXP y);
+RcppExport SEXP _farray_addTo(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(addTo(x, y));
+    return rcpp_result_gen;
+END_RCPP
+}
 // testt
 SEXP testt(std::string file);
 RcppExport SEXP _farray_testt(SEXP fileSEXP) {
@@ -575,6 +587,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_farray_getFArrayThread", (DL_FUNC) &_farray_getFArrayThread, 1},
     {"_farray_setFArrayThread", (DL_FUNC) &_farray_setFArrayThread, 2},
     {"_farray_hasOpenMP", (DL_FUNC) &_farray_hasOpenMP, 0},
+    {"_farray_addTo", (DL_FUNC) &_farray_addTo, 2},
     {"_farray_testt", (DL_FUNC) &_farray_testt, 1},
     {"_farray_ensurePartition", (DL_FUNC) &_farray_ensurePartition, 4},
     {"_farray_dropDimension", (DL_FUNC) &_farray_dropDimension, 1},

@@ -385,3 +385,58 @@ auto_clear_farray <- function(x, onexit = FALSE){
   invisible()
 }
 
+#' Check if indexing along a margin is fast
+#' @param dim dimension of an array, integers
+#' @param margin integers, which margins to check
+#' @return A logical vector.
+#' @details A [farray] object has fast indexing margin and slow indexing margin.
+#' Indexing along fast margins is speed optimized, while indexing within along
+#' the slow margins is always discouraged. When the array is extremely large,
+#' subset along slow margins could hurt the total performance. See examples for
+#' profiling.
+#'
+#' Here's how slow margins are calculated. An internal "block size" is set to
+#' maximize the disk reading speed. The default block size is 2048. All margins
+#' with cumulative product of dimension greater than the block size is
+#' considered fast. The last margin is always fast, and the first margin is
+#' always slow. For example, a `100x200x300` array has only one fast margin (3)
+#' because the first two elements of `cumprod(c(100,200,300))` are less equal
+#' than 2048. A `100x200` array has one fast margin and one slow margin. Though
+#' the first two elements of `cumprod(c(100,200))` are less equal than 2048, the
+#' second margin, which is the last margin is always fast.
+#'
+#' @examples
+#'
+#' is_fast_margin(c(100,200,300))
+#' is_fast_margin(c(100,200))
+#'
+#' # First two are slow
+#' is_fast_margin(c(2048,2,2,2))
+#'
+#' # Only the first margin is slow
+#' is_fast_margin(c(2049,2,2,2))
+#'
+#' if(interactive()) {
+#'   # the last two margins are fast margins
+#'   x <- as.farray(rnorm(2^24), dim = c(64,64,64,64))
+#'   is_fast_margin(dim(x))
+#'
+#'   # fast
+#'   system.time({ x[,,,1] })
+#'   system.time({ x[,,1,] })
+#'
+#'   # slow
+#'   system.time({ x[,1,,] })
+#'   system.time({ x[1,,,] })
+#' }
+#'
+#' @export
+is_fast_margin <- function(dim, margin){
+  if(missing(margin)){
+    margin <- seq_along(dim)
+  }
+  parsed <- parseAndScheduleBlocks2(lapply(dim, function(d){1}), dim)
+  res <- parsed$schedule$block_ndims < margin
+  res[margin == length(dim)] <- TRUE
+  return(res)
+}

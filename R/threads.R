@@ -38,7 +38,7 @@ get_farray_threads <- function(max = FALSE){
 #' @param workers positive integer or `"auto"`, number of 'CPU' to use.
 #' The default value is `"auto"`, i.e. `future::availableCores()`
 #' @param ... Further passed to [future::plan()]
-#'
+#' @return Current parallel strategy
 #' @export
 farray_parallel <- function(
   strategy = c(
@@ -49,26 +49,25 @@ farray_parallel <- function(
 ){
 
   options('farray.parallel.strategy' = FALSE)
+
   strategy <- match.arg(strategy)
-  if(!has_dipsaus()){
-    stop('Package dipsaus not detected. Please install.packages("dipsaus")')
-  }
 
   if(isTRUE(workers == 'auto')){
     # get maximum available workers
     workers <- future::availableCores()
   }
-
+  re <- NULL
   if(enabled){
-
+    options('farray.parallel.enabled' = TRUE)
     if(strategy == 'multicore'){
-      dipsaus::make_forked_clusters(..., workers = workers)
+      options(future.fork.enable = TRUE)
+      re <- future::plan(future::multicore, workers = workers, ...)
     } else if(strategy == 'callr'){
       callr <- import_from('callr', package = 'future.callr')
-      future::plan(callr, ..., workers = workers)
+      re <- future::plan(callr, ..., workers = workers)
     } else {
       args <- list(...)
-      tryCatch({
+      re <- tryCatch({
         future::plan(strategy, ..., workers = workers)
       }, error = function(e){
         do.call(future::plan, c(list(strategy), args))
@@ -76,9 +75,10 @@ farray_parallel <- function(
     }
 
   } else {
-    future::plan('sequential')
+    options('farray.parallel.enabled' = FALSE)
+    re <- future::plan('sequential')
   }
 
-  invisible()
+  invisible(re)
 }
 

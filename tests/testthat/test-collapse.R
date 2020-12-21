@@ -10,7 +10,7 @@ test_that("collapse", {
 
   test_f <- function(along){
     keep <- 1:4; keep <- keep[!keep %in% along]
-    res <- farray_collapse(x, along = along, method = 'sum')
+    res <- collapse2(x, along = along, method = 'sum')
     if(length(keep)){
       cmp <- apply(x[], keep, sum)
     } else {
@@ -23,7 +23,7 @@ test_that("collapse", {
     }
 
 
-    res <- farray_collapse(x, along = along, method = 'average')
+    res <- collapse2(x, along = along, method = 'average')
     if(length(keep)){
       cmp <- apply(x[], keep, mean)
     } else {

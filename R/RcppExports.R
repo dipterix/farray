@@ -45,6 +45,10 @@ hasOpenMP <- function() {
     .Call(`_farray_hasOpenMP`)
 }
 
+addTo <- function(x, y) {
+    .Call(`_farray_addTo`, x, y)
+}
+
 testt <- function(file) {
     .Call(`_farray_testt`, file)
 }
