@@ -63,3 +63,6 @@ colMeans(x[])
 \seealso{
 \code{\link[=partition_map]{partition_map()}}
 }
+\author{
+Zhengjia Wang
+}

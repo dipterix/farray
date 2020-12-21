@@ -69,3 +69,6 @@ collapse2(x, c(1,3))
 
 
 }
+\author{
+Zhengjia Wang
+}

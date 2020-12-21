@@ -1,5 +1,6 @@
 
 #' @title Set Number of Threads for `'farray'`
+#' @author Zhengjia Wang
 #' @description Set number of threads used by 'OpenMP'
 #' @param nr_of_threads number of CPU cores to use, or `NULL` to
 #' stay unchanged, default is `getOption('farray.nthreads')`
@@ -28,6 +29,7 @@ get_farray_threads <- function(max = FALSE){
 
 
 #' Schedule parallel processes for `farray`
+#' @author Zhengjia Wang
 #' @description Enable parallel processing, need `dipsaus` to be installed.
 #' For `"callr"` strategy, please also install `future.callr`.
 #' @param enabled whether multiple-process strategy is enabled

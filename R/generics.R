@@ -1,6 +1,7 @@
 
 #' Generate partition summary statistics for array objects along the last
 #' dimension
+#' @author Zhengjia Wang
 #' @param x an array or `farray`
 #' @param na.rm whether to remove `NA` when calculating summary statistics
 #' @param ... passed to other methods or ignored
@@ -56,6 +57,7 @@ partition_table.AbstractFArray <- function(x, na.rm = FALSE, ...){
 
 
 #' Apply function along the last dimension of an array and aggregate the results
+#' @author Zhengjia Wang
 #' @name partition_map
 #' @param x R array or `farray`
 #' @param map_fun function that takes in a slice of array and an optional
@@ -182,6 +184,7 @@ partition_map.AbstractFArray <- function(x, map_fun, reduce, partitions, further
 
 
 #' Apply functions to all partitions, but small chunks each time
+#' @author Zhengjia Wang
 #' @seealso [partition_map()]
 #' @param x a `farray` or R array
 #' @param map_fun function to apply to each chunk

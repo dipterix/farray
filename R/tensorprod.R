@@ -1,4 +1,5 @@
 #' Product of two arrays
+#' @author Zhengjia Wang
 #' @description Consistent with `tensor()` function in `tensor` package, or
 #' `ttl()` in `rTensor` package.
 #' @param A,B an [`array`] or [`farray`]

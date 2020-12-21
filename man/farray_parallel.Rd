@@ -30,3 +30,6 @@ Current parallel strategy
 Enable parallel processing, need \code{dipsaus} to be installed.
 For \code{"callr"} strategy, please also install \code{future.callr}.
 }
+\author{
+Zhengjia Wang
+}

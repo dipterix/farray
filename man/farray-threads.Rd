@@ -27,3 +27,6 @@ Number of cores currently used.
 \description{
 Set number of threads used by 'OpenMP'
 }
+\author{
+Zhengjia Wang
+}

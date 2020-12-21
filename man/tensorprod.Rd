@@ -45,3 +45,6 @@ y <- array(rnorm(120), c(4,5,6))
 tensorprod(x, y, alongA = 2, alongB = 1)
 
 }
+\author{
+Zhengjia Wang
+}

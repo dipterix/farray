@@ -75,3 +75,6 @@ partition_map(x, function(slice, part){
 
 
 }
+\author{
+Zhengjia Wang
+}

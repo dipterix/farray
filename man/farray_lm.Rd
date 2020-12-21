@@ -74,3 +74,6 @@ summary(object)
 summary(flm)
 
 }
+\author{
+Zhengjia Wang
+}

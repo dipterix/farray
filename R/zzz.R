@@ -1,5 +1,6 @@
 
 .onUnload <- function (libpath) {
+  options('farray.parallel.enabled' = FALSE)
   library.dynam.unload("farray", libpath)
 }
 

@@ -41,3 +41,6 @@ x[] <- 1:27
 partition_table(x, quiet=TRUE)
 
 }
+\author{
+Zhengjia Wang
+}

@@ -196,8 +196,6 @@ rand_string <- function(length = 50){
   paste(sample(c(letters, LETTERS, 0:9), length, replace = TRUE), collapse = '')
 }
 
-#' Check if Package `'dipsaus'` has been installed
-#' @export
 has_dipsaus <- function(){
   system.file('', package = 'dipsaus') != ''
 }

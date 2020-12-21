@@ -51,6 +51,7 @@ sub_lm_model <- function(formula, data, weights = NULL, offset = NULL,
 
 
 #' Fitting linear models using `farray`
+#' @author Zhengjia Wang
 #' @param formula an object of class [stats::formula()]. For variable
 #' names to be used, see 'Details'
 #' @param data a `farray` object

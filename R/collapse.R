@@ -1,5 +1,6 @@
 
 #' @title Collapse an array along certain margins
+#' @author Zhengjia Wang
 #' @description Collapse an array by calculating summation or average
 #' along certain dimensions.
 #' @param x an array, a matrix, or a [`farray`] instance

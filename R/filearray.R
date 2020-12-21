@@ -386,6 +386,7 @@ auto_clear_farray <- function(x, onexit = FALSE){
 }
 
 #' Check if indexing along a margin is fast
+#' @author Zhengjia Wang
 #' @param dim dimension of an array, integers
 #' @param margin integers, which margins to check
 #' @return A logical vector.
