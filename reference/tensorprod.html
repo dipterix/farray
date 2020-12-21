@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Set Number of Threads for 'farray' — farray-threads • farray</title>
+<title>Product of two arrays — tensorprod • farray</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,9 @@
 
 
 
-<meta property="og:title" content="Set Number of Threads for 'farray' — farray-threads" />
-<meta property="og:description" content="Set number of threads used by 'OpenMP'" />
+<meta property="og:title" content="Product of two arrays — tensorprod" />
+<meta property="og:description" content="Consistent with tensor() function in tensor package, or
+ttl() in rTensor package." />
 
 
 
@@ -108,47 +109,69 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Set Number of Threads for <code>'farray'</code></h1>
-    <small class="dont-index">Source: <a href='https://github.com/dipterix/farray/blob/master/R/threads.R'><code>R/threads.R</code></a></small>
-    <div class="hidden name"><code>farray-threads.Rd</code></div>
+    <h1>Product of two arrays</h1>
+    <small class="dont-index">Source: <a href='https://github.com/dipterix/farray/blob/master/R/tensorprod.R'><code>R/tensorprod.R</code></a></small>
+    <div class="hidden name"><code>tensorprod.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Set number of threads used by 'OpenMP'</p>
+    <p>Consistent with <code>tensor()</code> function in <code>tensor</code> package, or
+<code>ttl()</code> in <code>rTensor</code> package.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>set_farray_threads</span><span class='op'>(</span>
-  nr_of_threads <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/options.html'>getOption</a></span><span class='op'>(</span><span class='st'>"farray.nthreads"</span><span class='op'>)</span>,
-  reset_after_fork <span class='op'>=</span> <span class='cn'>NULL</span>
-<span class='op'>)</span>
-
-<span class='fu'>get_farray_threads</span><span class='op'>(</span>max <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>tensorprod</span><span class='op'>(</span>
+  <span class='va'>A</span>,
+  <span class='va'>B</span>,
+  alongA <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/integer.html'>integer</a></span><span class='op'>(</span><span class='fl'>0</span><span class='op'>)</span>,
+  alongB <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/integer.html'>integer</a></span><span class='op'>(</span><span class='fl'>0</span><span class='op'>)</span>,
+  path <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/tempfile.html'>tempfile</a></span><span class='op'>(</span><span class='op'>)</span>,
+  meta_name <span class='op'>=</span> <span class='st'>"farray.meta"</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>nr_of_threads</th>
-      <td><p>number of CPU cores to use, or <code>NULL</code> to
-stay unchanged, default is <code><a href='https://rdrr.io/r/base/options.html'>getOption('farray.nthreads')</a></code></p></td>
+      <th>A, B</th>
+      <td><p>an <code><a href='https://rdrr.io/r/base/array.html'>array</a></code> or <code><a href='farray.html'>farray</a></code></p></td>
     </tr>
     <tr>
-      <th>reset_after_fork</th>
-      <td><p>whether to reset after forked process</p></td>
+      <th>alongA, alongB</th>
+      <td><p>integers; margins in <code>A</code> and <code>B</code> to be collapsed.</p></td>
     </tr>
     <tr>
-      <th>max</th>
-      <td><p>whether return maximum available threads</p></td>
+      <th>path, meta_name</th>
+      <td><p>where to store the results; see <code><a href='farray.html'>farray</a></code>.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Number of cores currently used.</p>
+    <p>A <code><a href='farray.html'>farray</a></code> object.</p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>It is highly recommended that <code>A</code> is a small array and <code>B</code> is a
+large array. The performance if highly related to how <code>alongB</code> is assigned.
+If all the fast margins (see <code><a href='is_fast_margin.html'>is_fast_margin</a></code>) are contained within
+<code>alongB</code>, then there is no memory optimization, and the whole calculation
+occurs in the memory. If at least one fast margin is not in <code>alongB</code>, then
+the calculation is memory optimized.</p>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
     <p>Zhengjia Wang</p>
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'>
+<span class='va'>x</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>12</span>, ncol <span class='op'>=</span> <span class='fl'>4</span><span class='op'>)</span>
+<span class='va'>y</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/array.html'>array</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span><span class='op'>(</span><span class='fl'>120</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>4</span>,<span class='fl'>5</span>,<span class='fl'>6</span><span class='op'>)</span><span class='op'>)</span>
+
+<span class='co'># Equivalent to tensor::tensor(x, y, alongA = 2, alongB = 1)</span>
+<span class='co'># or rTensor::ttm(rTensor::as.tensor(y), x, m = 1)</span>
+<span class='fu'>tensorprod</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>y</span>, alongA <span class='op'>=</span> <span class='fl'>2</span>, alongB <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; &lt;FileArray&gt; (double)
+#&gt; Dimension:	 3 x 5 x 6  
+#&gt; File format: bmat</div><div class='input'>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
