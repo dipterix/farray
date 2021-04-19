@@ -119,6 +119,7 @@ FileArray <- R6::R6Class(
           data <- rep(data, self$partition_length)
         }
         fm[] <- data
+        self$`@generate_parition_summary`(part, data)
       } else {
         stop("Data length mismatches with partition length.")
       }
