@@ -6,6 +6,7 @@
 
 #ifdef _OPENMP
 #include <omp.h>
+#include <pthread.h>
 #define FARRAY_HAS_OPENMP true
 #else
 #define omp_get_thread_num() 0
@@ -14,8 +15,13 @@
 #endif
 
 #include <Rcpp.h>
+#include <algorithm>
 
+static int farrayThreads = 0;
 
+// stores n threads when fork occurs
+static bool detectFork = false;
+static int reset_forked = true;
 
 
 // [[Rcpp::export]]
