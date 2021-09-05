@@ -1,11 +1,12 @@
 
 # farray
-
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/dipterix/farray/workflows/R-CMD-check/badge.svg)](https://github.com/dipterix/farray/actions)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
 [![CRAN status](https://www.r-pkg.org/badges/version/farray)](https://CRAN.R-project.org/package=farray)
 <!-- badges: end -->
+
+> This repository is archived, please use this repo [https://github.com/dipterix/filearray](https://github.com/dipterix/filearray)
 
 The goal of farray is to ...
 
